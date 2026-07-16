@@ -1,0 +1,13 @@
+Build/
+
+# CLion
+.idea/
+
+# Scripts
+runFormat.ps1
+
+# Visual Studio
+.vs/
+out/
+CMakeSettings.json
+vc140.pdb

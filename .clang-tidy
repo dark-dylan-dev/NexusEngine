@@ -1,0 +1,151 @@
+Checks: >
+    -*,
+    bugprone-*,
+    performance-*,
+    portability-*,
+    readability-*,
+    modernize-*,
+    cppcoreguidelines-*,
+    clang-analyzer-*,
+
+    -cppcoreguidelines-owning-memory,
+    -cppcoreguidelines-avoid-magic-numbers,
+    -readability-magic-numbers,
+    -modernize-use-trailing-return-type,
+    -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+    -cppcoreguidelines-pro-type-vararg
+
+WarningsAsErrors: >
+    bugprone-*,
+    clang-analyzer-*,
+    performance-*
+
+HeaderFilterRegex: '.*'
+
+AnalyzeTemporaryDtors: false
+
+CheckOptions:
+    # =========================
+    # Namespaces
+    # =========================
+    - key: readability-identifier-naming.NamespaceCase
+      value: CamelCase
+
+    # =========================
+    # Types
+    # =========================
+    - key: readability-identifier-naming.ClassCase
+      value: PascalCase
+
+    - key: readability-identifier-naming.StructCase
+      value: PascalCase
+
+    - key: readability-identifier-naming.EnumCase
+      value: PascalCase
+
+    - key: readability-identifier-naming.TypeAliasCase
+      value: PascalCase
+
+    - key: readability-identifier-naming.TemplateParameterCase
+      value: PascalCase
+
+    - key: readability-identifier-naming.TemplateParameterPrefix
+      value: T
+
+    # =========================
+    # Functions
+    # =========================
+    - key: readability-identifier-naming.FunctionCase
+      value: PascalCase
+
+    - key: readability-identifier-naming.MethodCase
+      value: PascalCase
+
+    # =========================
+    # Variables
+    # =========================
+    - key: readability-identifier-naming.VariableCase
+      value: camelBack
+
+    - key: readability-identifier-naming.MemberCase
+      value: CamelCase
+
+    - key: readability-identifier-naming.MemberPrefix
+      value: m_
+
+    - key: readability-identifier-naming.PrivateMemberCase
+      value: CamelCase
+
+    - key: readability-identifier-naming.PrivateMemberPrefix
+      value: m_
+
+    - key: readability-identifier-naming.ProtectedMemberCase
+      value: CamelCase
+
+    - key: readability-identifier-naming.ProtectedMemberPrefix
+      value: m_
+
+    # =========================
+    # Static Variables
+    # =========================
+    - key: readability-identifier-naming.ClassMemberCase
+      value: CamelCase
+
+    - key: readability-identifier-naming.ClassMemberPrefix
+      value: s_
+
+    - key: readability-identifier-naming.GlobalVariableCase
+      value: CamelCase
+
+    - key: readability-identifier-naming.GlobalVariablePrefix
+      value: g_
+
+    # =========================
+    # Parameters
+    # =========================
+    - key: readability-identifier-naming.ParameterCase
+      value: camelBack
+
+    # =========================
+    # Constants
+    # =========================
+    - key: readability-identifier-naming.ConstantCase
+      value: PascalCase
+
+    - key: readability-identifier-naming.ConstantPrefix
+      value: k
+
+    - key: readability-identifier-naming.GlobalConstantCase
+      value: PascalCase
+
+    - key: readability-identifier-naming.GlobalConstantPrefix
+      value: k
+
+    - key: readability-identifier-naming.StaticConstantCase
+      value: PascalCase
+
+    - key: readability-identifier-naming.StaticConstantPrefix
+      value: k
+
+    # =========================
+    # Enum Values
+    # =========================
+    - key: readability-identifier-naming.EnumConstantCase
+      value: PascalCase
+
+    # =========================
+    # Macros
+    # =========================
+    - key: readability-identifier-naming.MacroDefinitionCase
+      value: UPPER_CASE
+
+    - key: readability-identifier-naming.MacroDefinitionPrefix
+      value: NX_
+
+    # =========================
+    # nullptr modernization
+    # =========================
+    - key: modernize-use-nullptr.NullMacros
+      value: 'NULL'
+
+FormatStyle: file

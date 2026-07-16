@@ -1,0 +1,7 @@
+if(NOT ${Vulkan_FOUND})
+    message(FATAL_ERROR "Vulkan not found")
+    return()
+else()
+    target_include_directories(NexusEngine PRIVATE ${Vulkan_INCLUDE_DIRS})
+    message(STATUS "Vulkan: Version ${Vulkan_VERSION}")
+endif()
