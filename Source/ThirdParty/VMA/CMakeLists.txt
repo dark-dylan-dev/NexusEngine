@@ -3,6 +3,9 @@ add_library(GPUOpen::VulkanMemoryAllocator ALIAS VulkanMemoryAllocator)
 add_library(VulkanMemoryAllocator::Headers ALIAS VulkanMemoryAllocator)
 
 add_library(VulkanMemoryAllocator-Hpp INTERFACE)
+target_compile_options(VulkanMemoryAllocator-Hpp INTERFACE
+        $<$<CXX_COMPILER_ID:Clang>:-Wno-nullability-completeness>
+)
 add_library(VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp ALIAS VulkanMemoryAllocator-Hpp)
 target_include_directories(VulkanMemoryAllocator-Hpp INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
