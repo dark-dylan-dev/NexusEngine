@@ -30,10 +30,10 @@ set(VULKAN_HEADERS_ENABLE_MODULE ON)
 add_library(Vulkan-Headers INTERFACE)
 add_library(Vulkan::Headers ALIAS Vulkan-Headers)
 target_compile_definitions(Vulkan-Headers INTERFACE VK_NO_PROTOTYPES=1)
+target_compile_definitions(Vulkan-Headers INTERFACE VULKAN_HPP_CXX_MODULE_EXPERIMENTAL_WARNING)
 target_include_directories(Vulkan-Headers INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 add_library(Vulkan-HppModule OBJECT)
-target_compile_definitions(Vulkan-HppModule INTERFACE VULKAN_HPP_CXX_MODULE_EXPERIMENTAL_WARNING)
 set_target_properties(Vulkan-HppModule PROPERTIES CXX_MODULE_STD ON)
 add_library(Vulkan::HppModule ALIAS Vulkan-HppModule)
 target_sources(Vulkan-HppModule PUBLIC
