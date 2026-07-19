@@ -1,4 +1,4 @@
-add_library(NexusEngine STATIC NexusEngine.cppm)
+add_library(NexusEngine)
 
 add_subdirectory(Asset)
 add_subdirectory(Audio)
@@ -14,4 +14,3 @@ target_sources(NexusEngine PUBLIC
         FILE_SET engine_module TYPE CXX_MODULES
         FILES NexusEngine.cppm
 )
-target_link_libraries(NexusEditor PRIVATE NexusEngine)
