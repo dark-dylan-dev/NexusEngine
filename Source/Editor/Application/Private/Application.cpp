@@ -1,6 +1,7 @@
 module NE.Editor.Application;
 
 import NexusEngine;
+
 import std;
 
 namespace Nexus {

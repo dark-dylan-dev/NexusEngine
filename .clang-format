@@ -46,32 +46,16 @@ IncludeBlocks: Regroup
 IncludeCategories:
 
   # 1: Paired header (quoted)
-  # Belt-and-suspenders for the auto-detection above. Also catches any other
-  # quoted includes (project-relative paths) and keeps them at the top.
   - Regex:         '^"'
     Priority:      1
     SortPriority:  1
     CaseSensitive: true
 
-  # 2: Engine module headers
-  # Angle-bracket includes whose first path component is a known NX module.
-  - Regex:         '^<(Animation|AssetPipeline|Audio|Core|ECS|JobSystem|Math|Networking|Physics|Platform|RHI|Renderer|Scripting)/'
+  # 2: Angle-bracket headers
+  - Regex:         '^<'
     Priority:      2
     SortPriority:  2
-    CaseSensitive: true
-
-  # 3: Third-party headers
-  # Catches <vulkan/vulkan.h>, <tracy/Tracy.hpp>, <imgui/imgui.h>, etc.
-  - Regex:         '^<\w+/'
-    Priority:      3
-    SortPriority:  3
     CaseSensitive: false
-
-  # 4: Standard library
-  # Everything remaining: <vector>, <span>, <cstdint>, <atomic>, …
-  - Regex:         '^<'
-    Priority:      4
-    SortPriority:  4
 
 # Constructor formatting
 BreakConstructorInitializersBeforeComma: false
@@ -102,13 +86,6 @@ Standard: Latest
 # Empty lines
 KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
-
-# Macros
-StatementMacros:
-    - ASSERT
-    - CHECK
-    - VERIFY
-    - LOG_FATAL
 
 # Alignments
 AlignConsecutiveAssignments: false
