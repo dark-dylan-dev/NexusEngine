@@ -1,5 +1,5 @@
 export module NE.Engine.RHI.Device;
 
-export namespace Nexus {
+export namespace Nexus::RHI {
     class RendererDevice {};
-} // namespace Nexus
+} // namespace Nexus::RHI

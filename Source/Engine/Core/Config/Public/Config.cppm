@@ -2,7 +2,7 @@ export module NE.Engine.Core.Config;
 
 import std;
 
-export namespace Nexus {
+export namespace Nexus::Config {
     // --- Engine Info ---
     constexpr std::string_view engineName = "Nexus Engine";
     constexpr std::string_view engineVersion = "0.0.1";
@@ -85,4 +85,4 @@ export namespace Nexus {
 #    pragma message("Your C++ version might not support C++23 features used inside this engine.")
 #endif
 
-} // namespace Nexus
+} // namespace Nexus::Config

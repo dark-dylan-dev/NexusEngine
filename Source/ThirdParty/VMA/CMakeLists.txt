@@ -13,7 +13,7 @@ if (TARGET Vulkan::HppModule)
     message(STATUS "VMA-Hpp module is available")
 
     # Set up VulkanMemoryAllocator-HppModule.
-    add_library(VulkanMemoryAllocator-HppModule OBJECT)
+    add_library(VulkanMemoryAllocator-HppModule)
     set_target_properties(VulkanMemoryAllocator-HppModule PROPERTIES CXX_MODULE_STD ON)
     add_library(VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-HppModule ALIAS VulkanMemoryAllocator-HppModule)
     target_sources(VulkanMemoryAllocator-HppModule PUBLIC

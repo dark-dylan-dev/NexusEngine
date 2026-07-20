@@ -29,7 +29,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugCallback(vk::DebugUtilsMessageS
     return VK_FALSE;
 }
 
-namespace Nexus {
+namespace Nexus::RHI {
 
     void VulkanDevice::createInstance() {
         VULKAN_HPP_DEFAULT_DISPATCHER.init();
@@ -56,7 +56,7 @@ namespace Nexus {
         instanceCreateInfo.setEnabledExtensionCount(static_cast<uint32_t>(instanceExtensions.size()));
         instanceCreateInfo.setPpEnabledExtensionNames(instanceExtensions.data());
 
-        if constexpr(isDebug) {
+        if constexpr (Config::isDebug) {
             std::vector<const char*> instanceLayers = {"VK_LAYER_KHRONOS_validation"};
             instanceCreateInfo.setEnabledLayerCount(static_cast<uint32_t>(instanceLayers.size()));
             instanceCreateInfo.setPpEnabledLayerNames(instanceLayers.data());
@@ -64,7 +64,7 @@ namespace Nexus {
 
         m_Instance = vk::raii::Instance(m_Context, instanceCreateInfo);
 
-        if constexpr (isDebug) {
+        if constexpr (Config::isDebug) {
             vk::DebugUtilsMessengerCreateInfoEXT messengerInfo = {};
             messengerInfo.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError |
                                             vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
@@ -81,4 +81,4 @@ namespace Nexus {
         // Initialize instance-specific function pointers
         VULKAN_HPP_DEFAULT_DISPATCHER.init(static_cast<vk::Instance>(m_Instance));
     }
-} // namespace Nexus
+} // namespace Nexus::RHI

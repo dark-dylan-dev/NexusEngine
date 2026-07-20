@@ -6,7 +6,7 @@ import std;
 namespace Nexus {
 
     void Application::run() {
-        std::println("Hello {}", Nexus::engineName);
+        std::println("Hello {}", Config::engineName);
     }
 
 } // namespace Nexus
