@@ -1035,8 +1035,8 @@ endif()
 
 # On Unix flavors we need the pthread library
 if (NOT ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows") AND NOT EMSCRIPTEN)
-	target_compile_options(Jolt PUBLIC -pthread)
-	target_link_options(Jolt PUBLIC -pthread)
+	target_compile_options(Jolt PRIVATE -pthread)
+	target_link_options(Jolt PRIVATE -pthread)
 endif()
 
 if (EMSCRIPTEN)
