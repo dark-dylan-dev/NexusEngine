@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 add_library(NexusThirdParty INTERFACE)
 
 add_subdirectory(GLFW)

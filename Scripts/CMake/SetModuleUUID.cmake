@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+
+# See: https://discourse.cmake.org/t/cmake-experimental-cxx-import-std-value-history-and-state/15712/3
 function(setModuleID)
     set(CMAKE_CXX_SCAN_FOR_MODULES ON CACHE BOOL "" FORCE)
     set(CMAKE_EXPERIMENTAL_CXX_MODULE_STD ON CACHE BOOL "" FORCE)

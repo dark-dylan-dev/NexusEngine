@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 module NE.Editor.Application;
 
 import NexusEngine;

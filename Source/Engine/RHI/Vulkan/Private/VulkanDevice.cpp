@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 module;
 
 #include <GLFW/glfw3.h>

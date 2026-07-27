@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 add_executable(NexusEditor main.cpp)
 
 add_subdirectory(Application)

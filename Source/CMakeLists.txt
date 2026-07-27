@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+
 add_subdirectory(Editor)
 add_subdirectory(Engine)
 add_subdirectory(ThirdParty)
