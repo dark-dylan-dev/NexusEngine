@@ -6,7 +6,7 @@ module;
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_hpp_macros.hpp>
 
-module NE.Engine.RHI.VulkanDevice;
+module NE.Engine.RHI.Vulkan.Device;
 
 import NE.Engine.Core.Config;
 import NE.Engine.Core.Types;

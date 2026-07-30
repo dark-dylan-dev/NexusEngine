@@ -23,4 +23,16 @@ if (TARGET Vulkan::HppModule)
 endif ()
 
 target_include_directories(NexusEngine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-message(STATUS "VMA: Version 3.4.0")
+
+# VMA version
+set(VMA_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/vk_mem_alloc.h")
+file(READ "${VMA_HEADER}" VMA_FILE_CONTENT)
+string(REGEX MATCH "#define[ \t]+VMA_VERSION[ \t]+\\(?VK_MAKE_VERSION\\(([0-9]+),[ \t]*([0-9]+),[ \t]*([0-9]+)\\)\\)?"
+       _ ${VMA_FILE_CONTENT})
+
+set(VMA_VERSION_MAJOR "${CMAKE_MATCH_1}")
+set(VMA_VERSION_MINOR "${CMAKE_MATCH_2}")
+set(VMA_VERSION_PATCH "${CMAKE_MATCH_3}")
+
+set(VMA_VERSION_STRING "${VMA_VERSION_MAJOR}.${VMA_VERSION_MINOR}.${VMA_VERSION_PATCH}")
+message(STATUS "VMA: Version ${VMA_VERSION_STRING}")

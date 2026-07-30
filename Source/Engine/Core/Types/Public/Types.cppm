@@ -27,4 +27,44 @@ export namespace Nexus {
 
     // Byte type
     using byte = std::byte;
+
+    template <typename T>
+    struct EnableFlagOperators : std::false_type {};
+
+    template <typename T>
+    concept FlagsEnum = EnableFlagOperators<T>::value && std::is_scoped_enum_v<T>;
+
+    template <FlagsEnum T>
+    constexpr T operator|(T a, T b) {
+        return static_cast<T>(std::to_underlying(a) | std::to_underlying(b));
+    }
+    template <FlagsEnum T>
+    constexpr T operator&(T a, T b) {
+        return static_cast<T>(std::to_underlying(a) & std::to_underlying(b));
+    }
+    template <FlagsEnum T>
+    constexpr T operator^(T a, T b) {
+        return static_cast<T>(std::to_underlying(a) ^ std::to_underlying(b));
+    }
+    template <FlagsEnum T>
+    constexpr T operator~(T a) {
+        return static_cast<T>(~std::to_underlying(a));
+    }
+    template <FlagsEnum T>
+    constexpr T& operator|=(T& a, T b) {
+        return a = a | b;
+    }
+    template <FlagsEnum T>
+    constexpr T& operator&=(T& a, T b) {
+        return a = a & b;
+    }
+    template <FlagsEnum T>
+    constexpr T& operator^=(T& a, T b) {
+        return a = a ^ b;
+    }
+
+    template <FlagsEnum T>
+    constexpr bool HasFlag(T value, T flag) {
+        return (value & flag) == flag;
+    }
 } // namespace Nexus
