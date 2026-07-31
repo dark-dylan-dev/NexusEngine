@@ -94,7 +94,7 @@ export namespace Nexus::RHI {
         uint32 Width;
         uint32 Height;
         uint32 Depth;
-        Format Format;
+        Format TexFormat;
         TextureUsage Usage;
     };
 
