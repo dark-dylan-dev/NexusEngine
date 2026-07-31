@@ -1,26 +1,15 @@
 // SPDX-License-Identifier: MIT
 
-module;
-
-#include <IncludeWindows.hpp>
-
 module NE.Engine.Core.Log;
 
 import NE.Engine.Core.Config;
 import NE.Engine.Core.Log.RingBuffer;
 
-import std;
+import std.compat;
 
 namespace Nexus {
-    static void EnableUTF8() {
-        if constexpr (Config::platform == "Windows") {
-            SetConsoleOutputCP(CP_UTF8);
-            SetConsoleCP(CP_UTF8);
-        }
-    }
 
     Logger::Logger(const std::filesystem::path& path, bool enableConsole) {
-        EnableUTF8();
         InstallCrashHandler();
         Init(path.generic_string(), enableConsole);
         Log(LogLevel::Info, "Logging system initialized");
@@ -123,8 +112,12 @@ namespace Nexus {
         const auto seconds = floor<std::chrono::seconds>(now);
 
         if (seconds != m_LastSecond) {
-            const auto zt = zoned_time{m_TimeZone, seconds};
-            m_CachedTime = std::format("{:%H:%M:%S}", zt.get_local_time());
+            const auto tt = system_clock::to_time_t(seconds);
+            const std::tm* local = std::localtime(&tt);
+
+            char buffer[9];
+            std::strftime(buffer, sizeof(buffer), "%H:%M:%S", local);
+            m_CachedTime = buffer;
             m_LastSecond = seconds;
         }
 

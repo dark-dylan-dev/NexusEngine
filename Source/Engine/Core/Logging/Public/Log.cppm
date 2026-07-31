@@ -34,10 +34,18 @@ export namespace Nexus {
 
         static std::string CaptureStacktrace();
 
+#if !defined(__cpp_lib_stacktrace)
+#    if defined(_WIN32)
+        static std::string CaptureStacktraceWindows();
+#    elif defined(__linux__) || defined(__APPLE__)
+        static std::string CaptureStacktracePosix();
+        static std::string DemangleFrame(const char* rawFrame);
+#    endif
+#endif
+
     private:
         RingBuffer<LogEntry, 4096> m_Buffer;
 
-        const std::chrono::time_zone* m_TimeZone{std::chrono::current_zone()};
         std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds> m_LastSecond{};
         std::string m_CachedTime{};
 

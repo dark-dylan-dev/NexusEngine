@@ -11,6 +11,10 @@ set(CMAKE_CXX_EXTENSIONS ON)
 include(Scripts/CMake/SetModuleUUID.cmake)
 setModuleID()
 
+# Default UTF-8 on Windows
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
 project(NexusEngine VERSION 0.0.1 LANGUAGES CXX)
 
 add_subdirectory(Source)
