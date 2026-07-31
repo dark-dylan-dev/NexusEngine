@@ -67,4 +67,10 @@ export namespace Nexus {
     constexpr bool HasFlag(T value, T flag) {
         return (value & flag) == flag;
     }
+
+    enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
+
+    struct LogEntry {
+        std::string Formatted;
+    };
 } // namespace Nexus

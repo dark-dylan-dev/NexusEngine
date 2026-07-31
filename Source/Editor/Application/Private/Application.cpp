@@ -4,12 +4,11 @@ module NE.Editor.Application;
 
 import NexusEngine;
 
-import std;
-
 namespace Nexus {
 
     void Application::run() {
-        std::println("Hello {}", Config::engineName);
+        Logger logger;
+        logger.Log(LogLevel::Info, std::format("Hello {}", Config::engineName));
     }
 
 } // namespace Nexus
