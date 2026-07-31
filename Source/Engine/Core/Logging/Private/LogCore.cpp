@@ -5,7 +5,7 @@ module NE.Engine.Core.Log;
 import NE.Engine.Core.Config;
 import NE.Engine.Core.Log.RingBuffer;
 
-import std.compat;
+import std;
 
 namespace Nexus {
 

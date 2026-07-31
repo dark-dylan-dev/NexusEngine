@@ -34,15 +34,6 @@ export namespace Nexus {
 
         static std::string CaptureStacktrace();
 
-#if !defined(__cpp_lib_stacktrace)
-#    if defined(_WIN32)
-        static std::string CaptureStacktraceWindows();
-#    elif defined(__linux__) || defined(__APPLE__)
-        static std::string CaptureStacktracePosix();
-        static std::string DemangleFrame(const char* rawFrame);
-#    endif
-#endif
-
     private:
         RingBuffer<LogEntry, 4096> m_Buffer;
 
