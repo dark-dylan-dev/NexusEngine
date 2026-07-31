@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: MIT
 
+module;
+
+#include <time.h>
+
 module NE.Engine.Core.Log;
 
 import NE.Engine.Core.Config;
@@ -18,20 +22,26 @@ namespace Nexus {
     Logger::~Logger() {
         Log(LogLevel::Info, "Logger system shutdown");
         Shutdown();
+        if (m_Buffer != nullptr)
+            delete m_Buffer;
+        if (m_File != nullptr)
+            delete m_File;
     }
 
     void Logger::Init(const std::filesystem::path& filePath, bool enableConsole) {
-        m_File.open(filePath, std::ios::out | std::ios::trunc);
+        m_File = new std::ofstream{};
+        m_File->open(filePath, std::ios::out | std::ios::trunc);
         m_EnableConsole = enableConsole;
         m_Running = true;
+        m_Buffer = new RingBuffer<LogEntry, 4096>{};
 
         m_BackgroundThread = std::jthread([this] {
             LogEntry entry;
             usize emptySpins = 0;
 
             while (m_Running) {
-                if (m_Buffer.TryPop(entry)) {
-                    m_File.write(entry.Formatted.data(), static_cast<std::streamsize>(entry.Formatted.size()));
+                if (m_Buffer->TryPop(entry)) {
+                    m_File->write(entry.Formatted.data(), static_cast<std::streamsize>(entry.Formatted.size()));
                     if (m_EnableConsole)
                         std::print("{}", entry.Formatted);
 
@@ -53,20 +63,20 @@ namespace Nexus {
 
     // Log
     void Logger::Log(LogLevel level, std::string_view message) {
-        m_Buffer.Insert({.Formatted = Format(level, message)});
+        m_Buffer->Insert({.Formatted = Format(level, message)});
     }
 
     // Flush
     void Logger::Flush() {
         LogEntry msg;
 
-        while (m_Buffer.TryPop(msg)) {
+        while (m_Buffer->TryPop(msg)) {
             WriteToFile(msg);
             if (m_EnableConsole)
                 WriteToConsole(msg);
         }
 
-        m_File.flush();
+        m_File->flush();
     }
 
     // Shutdown
@@ -76,7 +86,7 @@ namespace Nexus {
             m_BackgroundThread.join();
 
         Flush();
-        m_File.close();
+        m_File->close();
     }
 
     static const char* ToString(LogLevel level) {
@@ -113,10 +123,16 @@ namespace Nexus {
 
         if (seconds != m_LastSecond) {
             const auto tt = system_clock::to_time_t(seconds);
-            const std::tm* local = std::localtime(&tt);
+            std::tm local{};
+
+#if !defined(_WIN32)
+            localtime_r(&tt, &local);
+#else
+            localtime_s(&local, &tt);
+#endif
 
             char buffer[9];
-            std::strftime(buffer, sizeof(buffer), "%H:%M:%S", local);
+            std::strftime(buffer, sizeof(buffer), "%H:%M:%S", &local);
             m_CachedTime = buffer;
             m_LastSecond = seconds;
         }
@@ -135,7 +151,7 @@ namespace Nexus {
     }
 
     void Logger::WriteToFile(LogEntry& entry) {
-        m_File.write(entry.Formatted.data(), static_cast<std::streamsize>(entry.Formatted.size()));
+        m_File->write(entry.Formatted.data(), static_cast<std::streamsize>(entry.Formatted.size()));
     }
 
     void Logger::WriteToConsole(LogEntry& entry) {
