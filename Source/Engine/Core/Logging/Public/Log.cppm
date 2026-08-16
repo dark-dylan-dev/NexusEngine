@@ -10,7 +10,7 @@ import std;
 export namespace Nexus {
     class Logger {
     public:
-        explicit Logger(const std::filesystem::path& path = std::filesystem::path("Log.txt"),
+        explicit Logger(const std::filesystem::path& path = std::filesystem::path("Log.log"),
                         bool enableConsole = true);
         ~Logger();
 
