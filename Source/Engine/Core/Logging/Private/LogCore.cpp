@@ -2,7 +2,7 @@
 
 module;
 
-#include <time.h>
+#include <ctime>
 
 module NE.Engine.Core.Log;
 
