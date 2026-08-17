@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 export module NE.Engine.RHI.Types;
 
 import NE.Engine.Core.Types;
