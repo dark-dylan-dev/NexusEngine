@@ -42,6 +42,53 @@
 
   * Clang tidy
   * Clang format
+* Linux packages:
+```
+Ubuntu / Debian:
+- libwayland-dev
+- libxkbcommon-dev
+- libx11-dev
+- libxrandr-dev
+- libxinerama-dev
+- libxcursor-dev
+- libxi-dev
+
+Fedora:
+- wayland-devel
+- libxkbcommon-devel
+- libX11-devel
+- libXrandr-devel
+- libXinerama-devel
+- libXcursor-devel
+- libXi-devel
+
+Arch Linux:
+- wayland
+- libxkbcommon
+- libx11
+- libxrandr
+- libxinerama
+- libxcursor
+- libxi
+
+openSUSE:
+- wayland-devel
+- libxkbcommon-devel
+- libX11-devel
+- libXrandr-devel
+- libXinerama-devel
+- libXcursor-devel
+- libXi-devel
+
+Alpine:
+- wayland-dev
+- libxkbcommon-dev
+- libx11-dev
+- libxrandr-dev
+- libxinerama-dev
+- libxcursor-dev
+- libxi-dev
+```
 
 ## Availability
 
