@@ -44,10 +44,30 @@ export namespace Nexus::ECS {
         }
 
         template <Component T>
+        ComponentPool<T>* TryPool() {
+            const auto id = ComponentTypeId<T>();
+
+            if (id >= m_pools.size() || !m_pools[id])
+                return nullptr;
+
+            return static_cast<ComponentPool<T>*>(m_pools[id].get());
+        }
+
+        template <Component T>
+        const ComponentPool<T>* TryPool() const {
+            const auto id = ComponentTypeId<T>();
+
+            if (id >= m_pools.size() || !m_pools[id])
+                return nullptr;
+
+            return static_cast<const ComponentPool<T>*>(m_pools[id].get());
+        }
+
+        template <Component T>
         bool HasPool() const {
             const auto id = ComponentTypeId<T>();
 
-            return id < m_pools.size() && m_pools[id];
+            return id < m_pools.size() && m_pools[id] != nullptr;
         }
 
         template <Component... Components>
@@ -83,38 +103,90 @@ export namespace Nexus::ECS {
             if constexpr (sizeof...(Components) == 0)
                 return {};
 
-            std::size_t maxIndex = 0;
-
-            auto findMax = [&]<Component T> {
-                if (!HasPool<T>())
-                    return;
-
-                for (const auto entity : Pool<T>().Entities())
-                    maxIndex = std::max(maxIndex, static_cast<std::size_t>(entity.index));
-            };
-
-            (findMax.template operator()<Components>(), ...);
-
-            std::vector<Entity> result;
-            result.reserve(maxIndex + 1);
-
-            std::vector<std::uint8_t> seen(maxIndex + 1);
+            std::unordered_set<Entity, EntityHash> seen;
 
             auto add = [&]<Component T> {
                 if (!HasPool<T>())
                     return;
 
-                for (const auto entity : Pool<T>().Entities()) {
-                    if (!seen[entity.index]) {
-                        seen[entity.index] = 1;
-                        result.push_back(entity);
-                    }
-                }
+                for (const auto entity : Pool<T>().Entities())
+                    seen.insert(entity);
             };
 
             (add.template operator()<Components>(), ...);
 
-            return result;
+            return std::vector<Entity>(seen.begin(), seen.end());
+        }
+
+        template <Component... Components>
+        class QueryView {
+        public:
+            struct Iterator {
+                using value_type = std::tuple<Entity, Components&...>;
+
+                std::span<const Entity>::iterator it;
+                std::span<const Entity>::iterator end;
+                std::tuple<ComponentPool<Components>*...> pools;
+
+                void SkipToValid() {
+                    while (it != end && !(std::get<ComponentPool<Components>*>(pools)->Contains(*it) && ...))
+                        ++it;
+                }
+
+                Iterator& operator++() {
+                    ++it;
+                    SkipToValid();
+                    return *this;
+                }
+
+                bool operator!=(const Iterator& other) const {
+                    return it != other.it;
+                }
+                bool operator==(const Iterator& other) const {
+                    return it == other.it;
+                }
+
+                value_type operator*() const {
+                    const Entity entity = *it;
+                    return value_type(entity, std::get<ComponentPool<Components>*>(pools)->Get(entity)...);
+                }
+            };
+
+            QueryView(std::span<const Entity> driver, ComponentPool<Components>*... pools)
+                : m_driver(driver),
+                  m_pools(pools...) {}
+
+            Iterator begin() const {
+                Iterator iter{m_driver.begin(), m_driver.end(), m_pools};
+                iter.SkipToValid();
+                return iter;
+            }
+
+            Iterator end() const {
+                return {m_driver.end(), m_driver.end(), m_pools};
+            }
+
+        private:
+            std::span<const Entity> m_driver;
+            std::tuple<ComponentPool<Components>*...> m_pools;
+        };
+
+        template <Component... Components>
+        QueryView<Components...> View() {
+            static_assert(sizeof...(Components) > 0, "View requires at least one component");
+
+            if (!(HasPool<Components>() && ...))
+                return QueryView<Components...>({}, static_cast<ComponentPool<Components>*>(nullptr)...);
+
+            const std::array<IComponentPool*, sizeof...(Components)> pools{&Pool<Components>()...};
+
+            auto* smallest = pools.front();
+            for (auto* pool : pools) {
+                if (pool->Entities().size() < smallest->Entities().size())
+                    smallest = pool;
+            }
+
+            return QueryView<Components...>(smallest->Entities(), &Pool<Components>()...);
         }
 
         void RemoveEntity(Entity entity);

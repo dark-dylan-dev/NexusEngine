@@ -23,7 +23,7 @@ export namespace Nexus::ECS {
     public:
         template <typename... Args>
         T& Emplace(Entity entity, Args&&... args) {
-            return m_storage.Emplace(entity, T(std::forward<Args>(args)...));
+            return m_storage.Emplace(entity, std::forward<Args>(args)...);
         }
 
         void Remove(Entity entity) override {
@@ -38,8 +38,28 @@ export namespace Nexus::ECS {
             return m_storage.Get(entity);
         }
 
+        const T& Get(Entity entity) const {
+            return m_storage.Get(entity);
+        }
+
+        T* TryGet(Entity entity) {
+            return m_storage.TryGet(entity);
+        }
+
+        const T* TryGet(Entity entity) const {
+            return m_storage.TryGet(entity);
+        }
+
         std::span<const Entity> Entities() const override {
             return m_storage.Entities();
+        }
+
+        std::span<T> Values() {
+            return m_storage.Values();
+        }
+
+        std::span<const T> Values() const {
+            return m_storage.Values();
         }
 
     private:

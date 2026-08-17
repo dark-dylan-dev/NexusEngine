@@ -2,6 +2,7 @@
 
 export module NE.Engine.ECS.World;
 
+import NE.Engine.Core.Types;
 import NE.Engine.ECS.Component;
 import NE.Engine.ECS.Entity;
 import NE.Engine.ECS.Registry;
@@ -13,6 +14,11 @@ export namespace Nexus::ECS {
     public:
         Entity CreateEntity();
         void DestroyEntity(Entity entity);
+
+        bool IsAlive(Entity entity) const {
+            return entity.index < m_generations.size() && entity.index != 0 &&
+                   m_generations[entity.index] == entity.generation && m_alive[entity.index];
+        }
 
         template <Component T, typename... Args>
         T& Add(Entity entity, Args&&... args) {
@@ -26,12 +32,30 @@ export namespace Nexus::ECS {
 
         template <Component T>
         bool Has(Entity entity) const {
-            return m_registry.Pool<T>().Contains(entity);
+            const auto* pool = m_registry.TryPool<T>();
+            return pool && pool->Contains(entity);
         }
 
         template <Component T>
         T& Get(Entity entity) {
             return m_registry.Pool<T>().Get(entity);
+        }
+
+        template <Component T>
+        const T& Get(Entity entity) const {
+            return m_registry.Pool<T>().Get(entity);
+        }
+
+        template <Component T>
+        T* TryGet(Entity entity) {
+            auto* pool = m_registry.TryPool<T>();
+            return pool ? pool->TryGet(entity) : nullptr;
+        }
+
+        template <Component T>
+        const T* TryGet(Entity entity) const {
+            const auto* pool = m_registry.TryPool<T>();
+            return pool ? pool->TryGet(entity) : nullptr;
         }
 
         template <Component... Components>
@@ -44,8 +68,16 @@ export namespace Nexus::ECS {
             return m_registry.QueryAny<Components...>();
         }
 
+        template <Component... Components>
+        Registry::QueryView<Components...> View() {
+            return m_registry.View<Components...>();
+        }
+
     private:
-        Entity m_nextEntity = {.index = 1, .generation = 0};
+        uint32 m_nextIndex = 1;
+        std::vector<uint32> m_freeIndices;
+        std::vector<uint32> m_generations;
+        std::vector<bool> m_alive;
         Registry m_registry;
     };
 } // namespace Nexus::ECS

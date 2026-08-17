@@ -57,15 +57,43 @@ export namespace Nexus::ECS {
         }
 
         T& Get(Entity entity) {
+            if (!Contains(entity))
+                throw std::out_of_range("SparseSet::Get: entity not present");
+
             return m_dense[m_sparse[entity.index] - 1];
         }
 
         const T& Get(Entity entity) const {
+            if (!Contains(entity))
+                throw std::out_of_range("SparseSet::Get: entity not present");
+
             return m_dense[m_sparse[entity.index] - 1];
+        }
+
+        T* TryGet(Entity entity) {
+            if (!Contains(entity))
+                return nullptr;
+
+            return &m_dense[m_sparse[entity.index] - 1];
+        }
+
+        const T* TryGet(Entity entity) const {
+            if (!Contains(entity))
+                return nullptr;
+
+            return &m_dense[m_sparse[entity.index] - 1];
         }
 
         std::span<const Entity> Entities() const {
             return m_denseEntities;
+        }
+
+        std::span<T> Values() {
+            return m_dense;
+        }
+
+        std::span<const T> Values() const {
+            return m_dense;
         }
 
     private:
