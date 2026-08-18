@@ -13,18 +13,21 @@ export namespace Nexus::ECS {
     public:
         template <typename... Args>
         T& Emplace(Entity entity, Args&&... args) {
-            if (Contains(entity))
-                return Get(entity);
+            if (entity.index >= m_sparse.size()) [[unlikely]] {
+                const usize new_size = std::max<usize>(entity.index + 1, m_sparse.size() * 2);
+                m_sparse.resize(new_size, 0);
+            }
+
+            auto& sparse_slot = m_sparse[entity.index];
+            if (sparse_slot != 0) [[unlikely]] {
+                return m_dense[sparse_slot - 1];
+            }
 
             const auto index = m_dense.size();
-
-            if (entity.index >= m_sparse.size())
-                m_sparse.resize(entity.index + 1, 0);
-
             m_denseEntities.push_back(entity);
             m_dense.emplace_back(std::forward<Args>(args)...);
 
-            m_sparse[entity.index] = index + 1;
+            sparse_slot = index + 1;
 
             return m_dense.back();
         }
@@ -50,6 +53,12 @@ export namespace Nexus::ECS {
             m_dense.pop_back();
 
             m_sparse[entity.index] = 0;
+        }
+
+        void Reserve(usize capacity) {
+            m_sparse.reserve(capacity);
+            m_dense.reserve(capacity);
+            m_denseEntities.reserve(capacity);
         }
 
         bool Contains(Entity entity) const {

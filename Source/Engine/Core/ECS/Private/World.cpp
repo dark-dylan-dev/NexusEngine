@@ -2,9 +2,12 @@
 
 module NE.Engine.ECS.World;
 
+import NE.Engine.Core.Types;
+
 import std;
 
 namespace Nexus::ECS {
+
     Entity World::CreateEntity() {
         uint32 index;
 
@@ -14,13 +17,14 @@ namespace Nexus::ECS {
         } else {
             index = m_nextIndex++;
 
-            if (index >= m_generations.size()) {
-                m_generations.resize(index + 1, 0);
-                m_alive.resize(index + 1, false);
+            if (index >= m_generations.size()) [[unlikely]] {
+                const usize new_capacity = std::max<usize>(1024, m_generations.size() * 2);
+                m_generations.resize(new_capacity, 0);
+                m_alive.resize(new_capacity, 0);
             }
         }
 
-        m_alive[index] = true;
+        m_alive[index] = 1;
 
         return {.index = index, .generation = m_generations[index]};
     }
@@ -31,8 +35,13 @@ namespace Nexus::ECS {
 
         m_registry.RemoveEntity(entity);
 
-        m_alive[entity.index] = false;
+        m_alive[entity.index] = 0;
         ++m_generations[entity.index];
         m_freeIndices.push_back(entity.index);
+    }
+
+    bool World::IsAlive(Entity entity) const {
+        return entity.index < m_generations.size() && entity.index != 0 &&
+               m_generations[entity.index] == entity.generation && m_alive[entity.index];
     }
 } // namespace Nexus::ECS

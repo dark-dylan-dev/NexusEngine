@@ -15,9 +15,11 @@ export namespace Nexus::ECS {
         Entity CreateEntity();
         void DestroyEntity(Entity entity);
 
-        bool IsAlive(Entity entity) const {
-            return entity.index < m_generations.size() && entity.index != 0 &&
-                   m_generations[entity.index] == entity.generation && m_alive[entity.index];
+        bool IsAlive(Entity entity) const;
+
+        template <typename... Components>
+        void Reserve(usize capacity) {
+            (m_registry.Pool<Components>().Reserve(capacity), ...);
         }
 
         template <Component T, typename... Args>
@@ -77,7 +79,7 @@ export namespace Nexus::ECS {
         uint32 m_nextIndex = 1;
         std::vector<uint32> m_freeIndices;
         std::vector<uint32> m_generations;
-        std::vector<bool> m_alive;
+        std::vector<uint8> m_alive;
         Registry m_registry;
     };
 } // namespace Nexus::ECS

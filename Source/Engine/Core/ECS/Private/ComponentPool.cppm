@@ -2,6 +2,7 @@
 
 export module NE.Engine.ECS.ComponentPool;
 
+import NE.Engine.Core.Types;
 import NE.Engine.ECS.Component;
 import NE.Engine.ECS.Entity;
 import NE.Engine.ECS.SparseSet;
@@ -32,6 +33,10 @@ export namespace Nexus::ECS {
 
         bool Contains(Entity entity) const override {
             return m_storage.Contains(entity);
+        }
+
+        void Reserve(usize capacity) {
+            m_storage.Reserve(capacity);
         }
 
         T& Get(Entity entity) {
