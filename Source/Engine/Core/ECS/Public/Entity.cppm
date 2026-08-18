@@ -13,8 +13,9 @@ export namespace Nexus::ECS {
     };
 
     struct EntityHash {
-        usize operator()(Entity entity) const noexcept {
-            return (static_cast<usize>(entity.index) << 32) ^ entity.generation;
+        static constexpr uint32 PHI = 0x9e3779b9;
+        usize operator()(const Entity& e) const noexcept {
+            return e.index ^ (static_cast<usize>(e.generation) * PHI);
         }
     };
 
