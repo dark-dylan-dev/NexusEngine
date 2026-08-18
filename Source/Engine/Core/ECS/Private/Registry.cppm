@@ -103,19 +103,37 @@ export namespace Nexus::ECS {
             if constexpr (sizeof...(Components) == 0)
                 return {};
 
-            std::unordered_set<Entity, EntityHash> seen;
+            usize max_id = 0;
+            auto track_max = [&]<typename T>() {
+                if (HasPool<T>()) {
+                    const auto& entities = Pool<T>().Entities();
+                    if (!entities.empty()) {
+                        max_id = std::max(max_id, static_cast<usize>(entities.back().index));
+                    }
+                }
+            };
+            (track_max.template operator()<Components>(), ...);
 
-            auto add = [&]<Component T> {
-                if (!HasPool<T>())
-                    return;
+            if (max_id == 0) return {};
 
-                for (const auto entity : Pool<T>().Entities())
-                    seen.insert(entity);
+            std::vector<bool> visited(max_id + 1, false);
+            std::vector<Entity> result;
+            result.reserve(max_id + 1);
+
+            auto collect = [&]<typename T>() {
+                if (!HasPool<T>()) return;
+                for (const auto entity : Pool<T>().Entities()) {
+                    const usize idx = entity.index;
+                    if (!visited[idx]) {
+                        visited[idx] = true;
+                        result.push_back(entity);
+                    }
+                }
             };
 
-            (add.template operator()<Components>(), ...);
+            (collect.template operator()<Components>(), ...);
 
-            return std::vector<Entity>(seen.begin(), seen.end());
+            return result;
         }
 
         template <Component... Components>
