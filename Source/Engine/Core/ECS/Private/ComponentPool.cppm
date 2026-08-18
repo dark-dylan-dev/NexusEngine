@@ -16,6 +16,7 @@ export namespace Nexus::ECS {
 
         virtual void Remove(Entity entity) = 0;
         virtual bool Contains(Entity entity) const = 0;
+        virtual void Reserve(usize capacity) = 0;
         virtual std::span<const Entity> Entities() const = 0;
     };
 
@@ -35,7 +36,7 @@ export namespace Nexus::ECS {
             return m_storage.Contains(entity);
         }
 
-        void Reserve(usize capacity) {
+        void Reserve(usize capacity) override {
             m_storage.Reserve(capacity);
         }
 
