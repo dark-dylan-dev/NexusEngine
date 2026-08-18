@@ -114,14 +114,16 @@ export namespace Nexus::ECS {
             };
             (track_max.template operator()<Components>(), ...);
 
-            if (max_id == 0) return {};
+            if (max_id == 0)
+                return {};
 
             std::vector<bool> visited(max_id + 1, false);
             std::vector<Entity> result;
             result.reserve(max_id + 1);
 
             auto collect = [&]<typename T>() {
-                if (!HasPool<T>()) return;
+                if (!HasPool<T>())
+                    return;
                 for (const auto entity : Pool<T>().Entities()) {
                     const usize idx = entity.index;
                     if (!visited[idx]) {
