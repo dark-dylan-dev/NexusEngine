@@ -18,3 +18,10 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 project(NexusEngine VERSION 0.0.1 LANGUAGES CXX)
 
 add_subdirectory(Source)
+
+option(NEXUS_BUILD_TEST "Enable Nexus Engine tests" OFF)
+if(NEXUS_BUILD_TEST)
+    include(Scripts/CMake/EnableTesting.cmake)
+    enable_testing()
+    add_subdirectory(Tests)
+endif()
