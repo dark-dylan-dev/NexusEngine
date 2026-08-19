@@ -16,11 +16,11 @@ namespace Nexus {
     Logger::Logger(const std::filesystem::path& path, bool enableConsole) {
         InstallCrashHandler();
         Init(path.generic_string(), enableConsole);
-        Log(LogLevel::Info, "Logging system initialized");
+        LogInfo("Logging system initialized");
     }
 
     Logger::~Logger() {
-        Log(LogLevel::Info, "Logger system shutdown");
+        LogInfo("Logger system shutdown");
         Shutdown();
         if (m_Buffer != nullptr)
             delete m_Buffer;
@@ -64,6 +64,30 @@ namespace Nexus {
     // Log
     void Logger::Log(LogLevel level, std::string_view message) {
         m_Buffer->Insert({.Formatted = Format(level, message)});
+    }
+
+    void Logger::LogTrace(std::string_view message) {
+        Log(LogLevel::Trace, message);
+    }
+
+    void Logger::LogDebug(std::string_view message) {
+        Log(LogLevel::Debug, message);
+    }
+
+    void Logger::LogInfo(std::string_view message) {
+        Log(LogLevel::Info, message);
+    }
+
+    void Logger::LogWarn(std::string_view message) {
+        Log(LogLevel::Warn, message);
+    }
+
+    void Logger::LogError(std::string_view message) {
+        Log(LogLevel::Error, message);
+    }
+
+    void Logger::LogFatal(std::string_view message) {
+        Log(LogLevel::Fatal, message);
     }
 
     // Flush

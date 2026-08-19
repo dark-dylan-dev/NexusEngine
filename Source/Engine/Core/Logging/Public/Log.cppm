@@ -17,6 +17,12 @@ export namespace Nexus {
         void Init(const std::filesystem::path& filePath, bool enableConsole);
 
         void Log(LogLevel level, std::string_view message);
+        void LogTrace(std::string_view message);
+        void LogDebug(std::string_view message);
+        void LogInfo(std::string_view message);
+        void LogWarn(std::string_view message);
+        void LogError(std::string_view message);
+        void LogFatal(std::string_view message);
 
         void Flush();
 

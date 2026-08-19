@@ -8,7 +8,7 @@ namespace Nexus {
 
     void Application::run() {
         Logger logger;
-        logger.Log(LogLevel::Info, std::format("Hello {}", Config::engineName));
+        logger.LogInfo(std::format("Hello {}", Config::engineName));
     }
 
 } // namespace Nexus
