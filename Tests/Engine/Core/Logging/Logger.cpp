@@ -154,6 +154,4 @@ TEST_F(LoggerTest, SpecialCharacters) {
     EXPECT_TRUE(content.contains("World\t"));
     EXPECT_TRUE(content.contains("\"quoted\""));
     EXPECT_TRUE(content.contains("\u2615"));
-
-    std::println("\u2615");
 }
