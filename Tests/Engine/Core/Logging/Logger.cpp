@@ -9,7 +9,7 @@ import std;
 
 namespace {
     const std::filesystem::path logPath = "TestLogger.log";
-    
+
     class LoggerTest : public ::testing::Test {
     protected:
         LoggerTest() : m_Logger(logPath, false) {}
@@ -51,57 +51,56 @@ TEST_F(LoggerTest, Destruction) {
 
     EXPECT_TRUE(std::filesystem::exists(logPath));
 
-    const auto content = ReadLogFile();
-    EXPECT_NE(content.find("Test message"), std::string::npos);
+    EXPECT_TRUE(ReadLogFile().contains("Test message"));
 }
 
 TEST_F(LoggerTest, LogTrace) {
     m_Logger.LogTrace("Trace message");
     m_Logger.Flush();
 
-    EXPECT_NE(ReadLogFile().find("Trace message"), std::string::npos);
+    EXPECT_TRUE(ReadLogFile().contains("Trace message"));
 }
 
 TEST_F(LoggerTest, LogDebug) {
     m_Logger.LogDebug("Debug message");
     m_Logger.Flush();
 
-    EXPECT_NE(ReadLogFile().find("Debug message"), std::string::npos);
+    EXPECT_TRUE(ReadLogFile().contains("Debug message"));
 }
 
 TEST_F(LoggerTest, LogInfo) {
     m_Logger.LogInfo("Info message");
     m_Logger.Flush();
 
-    EXPECT_NE(ReadLogFile().find("Info message"), std::string::npos);
+    EXPECT_TRUE(ReadLogFile().contains("Info message"));
 }
 
 TEST_F(LoggerTest, LogWarn) {
     m_Logger.LogWarn("Warning message");
     m_Logger.Flush();
 
-    EXPECT_NE(ReadLogFile().find("Warning message"), std::string::npos);
+    EXPECT_TRUE(ReadLogFile().contains("Warning message"));
 }
 
 TEST_F(LoggerTest, LogError) {
     m_Logger.LogError("Error message");
     m_Logger.Flush();
 
-    EXPECT_NE(ReadLogFile().find("Error message"), std::string::npos);
+    EXPECT_TRUE(ReadLogFile().contains("Error message"));
 }
 
 TEST_F(LoggerTest, LogFatal) {
     m_Logger.LogFatal("Fatal message");
     m_Logger.Flush();
 
-    EXPECT_NE(ReadLogFile().find("Fatal message"), std::string::npos);
+    EXPECT_TRUE(ReadLogFile().contains("Fatal message"));
 }
 
 TEST_F(LoggerTest, LogGeneric) {
     m_Logger.Log(Nexus::LogLevel::Info, "Generic message");
     m_Logger.Flush();
 
-    EXPECT_NE(ReadLogFile().find("Generic message"), std::string::npos);
+    EXPECT_TRUE(ReadLogFile().contains("Generic message"));
 }
 
 TEST_F(LoggerTest, MultipleMessages) {
@@ -112,9 +111,19 @@ TEST_F(LoggerTest, MultipleMessages) {
 
     const auto content = ReadLogFile();
 
-    EXPECT_NE(content.find("First message"), std::string::npos);
-    EXPECT_NE(content.find("Second message"), std::string::npos);
-    EXPECT_NE(content.find("Third message"), std::string::npos);
+    const auto firstPresent = content.contains("First message");
+    const auto secondPresent = content.contains("Second message");
+    const auto thirdPresent = content.contains("Third message");
+
+    const auto firstIt = content.find("First message");
+    const auto secondIt = content.find("Second message");
+    const auto thirdIt = content.find("Third message");
+
+    EXPECT_TRUE(firstPresent && secondPresent && thirdPresent);
+
+    // Expect single thread consumer messages to be in order
+    EXPECT_LT(firstIt, secondIt);
+    EXPECT_LT(secondIt, thirdIt);
 }
 
 TEST_F(LoggerTest, EmptyMessage) {
@@ -132,5 +141,20 @@ TEST_F(LoggerTest, LongMessage) {
         m_Logger.Flush();
     });
 
-    EXPECT_NE(ReadLogFile().find(message), std::string::npos);
+    EXPECT_TRUE(ReadLogFile().contains(message));
+}
+
+TEST_F(LoggerTest, SpecialCharacters) {
+    m_Logger.LogInfo("Hello\nWorld\t\"quoted\"\u2615");
+    m_Logger.Flush();
+
+    const auto content = ReadLogFile();
+
+    EXPECT_TRUE(content.contains("Hello\n"));
+    EXPECT_TRUE(content.contains("World\t"));
+    EXPECT_TRUE(content.contains("\"quoted\""));
+    EXPECT_TRUE(content.contains("\u2615"));
+
+    std::println("\u2615");
+    std::system("pause");
 }

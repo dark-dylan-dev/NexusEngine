@@ -28,14 +28,14 @@ namespace Nexus {
         m_File = std::make_unique<std::ofstream>();
         m_File->open(filePath, std::ios::out | std::ios::trunc);
         m_EnableConsole = enableConsole;
-        m_Running = true;
+        m_Running.store(true, std::memory_order_release);
         m_Buffer = std::make_unique<RingBuffer<LogEntry, 4096>>();
 
         m_BackgroundThread = std::jthread([this] {
             LogEntry entry;
             usize emptySpins = 0;
 
-            while (m_Running) {
+            while (m_Running.load(std::memory_order_acquire)) {
                 if (m_Buffer->Pop(entry)) {
                     m_File->write(entry.Formatted.data(), static_cast<isize>(entry.Formatted.size()));
                     if (m_EnableConsole)
@@ -52,6 +52,23 @@ namespace Nexus {
                     } else {
                         std::this_thread::sleep_for(std::chrono::microseconds(100));
                     }
+                }
+
+                if (m_FlushRequested.load(std::memory_order_acquire)) {
+                    while (m_Buffer->Pop(entry)) {
+                        m_File->write(entry.Formatted.data(), static_cast<isize>(entry.Formatted.size()));
+                        if (m_EnableConsole)
+                            std::print("{}", entry.Formatted);
+                    }
+
+                    m_File->flush();
+
+                    {
+                        std::lock_guard lock(m_FlushMutex);
+                        m_FlushRequested.store(false, std::memory_order_release);
+                        m_FlushGeneration.fetch_add(1, std::memory_order_release);
+                    }
+                    m_FlushCv.notify_all();
                 }
             }
         });
@@ -90,24 +107,22 @@ namespace Nexus {
 
     // Flush
     void Logger::Flush() {
-        LogEntry msg;
+        uint64 generationBefore = m_FlushGeneration.load(std::memory_order_acquire);
 
-        while (m_Buffer->Pop(msg)) {
-            WriteToFile(msg);
-            if (m_EnableConsole)
-                WriteToConsole(msg);
-        }
+        m_FlushRequested.store(true, std::memory_order_release);
 
-        m_File->flush();
+        std::unique_lock lock(m_FlushMutex);
+        m_FlushCv.wait(lock, [&] { return m_FlushGeneration.load(std::memory_order_acquire) != generationBefore; });
     }
 
     // Shutdown
     void Logger::Shutdown() {
-        m_Running = false;
+        Flush();
+
+        m_Running.store(false, std::memory_order_release);
         if (m_BackgroundThread.joinable())
             m_BackgroundThread.join();
 
-        Flush();
         m_File->close();
     }
 
@@ -159,17 +174,7 @@ namespace Nexus {
             m_LastSecond = seconds;
         }
 
-        thread_local std::string tl_FormatBuffer;
-        tl_FormatBuffer.clear();
-
-        if (tl_FormatBuffer.capacity() < 256) {
-            tl_FormatBuffer.reserve(256);
-        }
-
-        std::format_to(std::back_inserter(tl_FormatBuffer), "[thread:{}] [{}] [{}] {}\n", CachedThreadId(),
-                       m_CachedTime, ToString(level), message);
-
-        return tl_FormatBuffer;
+        return std::format("[thread:{}] [{}] [{}] {}\n", CachedThreadId(), m_CachedTime, ToString(level), message);
     }
 
     void Logger::WriteToFile(LogEntry& entry) {
