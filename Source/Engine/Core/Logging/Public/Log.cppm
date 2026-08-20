@@ -14,8 +14,6 @@ export namespace Nexus {
                         bool enableConsole = true);
         ~Logger();
 
-        void Init(const std::filesystem::path& filePath, bool enableConsole);
-
         void Log(LogLevel level, std::string_view message);
         void LogTrace(std::string_view message);
         void LogDebug(std::string_view message);
@@ -26,13 +24,14 @@ export namespace Nexus {
 
         void Flush();
 
+    private:
+        void Init(const std::filesystem::path& filePath, bool enableConsole);
         void Shutdown();
 
         // Crash handling
         static void InstallCrashHandler();
         static void HandleCrash(int signal);
 
-    private:
         void WriteToFile(LogEntry& entry);
         void WriteToConsole(LogEntry& entry);
 
@@ -41,12 +40,12 @@ export namespace Nexus {
         static std::string CaptureStacktrace();
 
     private:
-        RingBuffer<LogEntry, 4096>* m_Buffer = nullptr;
+        std::unique_ptr<RingBuffer<LogEntry, 4096>> m_Buffer = nullptr;
 
         std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds> m_LastSecond{};
         std::string m_CachedTime{};
 
-        std::ofstream* m_File = nullptr;
+        std::unique_ptr<std::ofstream> m_File = nullptr;
         bool m_EnableConsole{true};
 
         std::atomic<bool> m_Running{false};

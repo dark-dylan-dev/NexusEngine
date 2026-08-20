@@ -22,26 +22,22 @@ namespace Nexus {
     Logger::~Logger() {
         LogInfo("Logger system shutdown");
         Shutdown();
-        if (m_Buffer != nullptr)
-            delete m_Buffer;
-        if (m_File != nullptr)
-            delete m_File;
     }
 
     void Logger::Init(const std::filesystem::path& filePath, bool enableConsole) {
-        m_File = new std::ofstream{};
+        m_File = std::make_unique<std::ofstream>();
         m_File->open(filePath, std::ios::out | std::ios::trunc);
         m_EnableConsole = enableConsole;
         m_Running = true;
-        m_Buffer = new RingBuffer<LogEntry, 4096>{};
+        m_Buffer = std::make_unique<RingBuffer<LogEntry, 4096>>();
 
         m_BackgroundThread = std::jthread([this] {
             LogEntry entry;
             usize emptySpins = 0;
 
             while (m_Running) {
-                if (m_Buffer->TryPop(entry)) {
-                    m_File->write(entry.Formatted.data(), static_cast<std::streamsize>(entry.Formatted.size()));
+                if (m_Buffer->Pop(entry)) {
+                    m_File->write(entry.Formatted.data(), static_cast<isize>(entry.Formatted.size()));
                     if (m_EnableConsole)
                         std::print("{}", entry.Formatted);
 
@@ -63,7 +59,9 @@ namespace Nexus {
 
     // Log
     void Logger::Log(LogLevel level, std::string_view message) {
-        m_Buffer->Insert({.Formatted = Format(level, message)});
+        while (!m_Buffer->Push({.Formatted = Format(level, message)})) {
+            std::this_thread::yield();
+        }
     }
 
     void Logger::LogTrace(std::string_view message) {
@@ -94,7 +92,7 @@ namespace Nexus {
     void Logger::Flush() {
         LogEntry msg;
 
-        while (m_Buffer->TryPop(msg)) {
+        while (m_Buffer->Pop(msg)) {
             WriteToFile(msg);
             if (m_EnableConsole)
                 WriteToConsole(msg);
@@ -175,7 +173,7 @@ namespace Nexus {
     }
 
     void Logger::WriteToFile(LogEntry& entry) {
-        m_File->write(entry.Formatted.data(), static_cast<std::streamsize>(entry.Formatted.size()));
+        m_File->write(entry.Formatted.data(), static_cast<isize>(entry.Formatted.size()));
     }
 
     void Logger::WriteToConsole(LogEntry& entry) {

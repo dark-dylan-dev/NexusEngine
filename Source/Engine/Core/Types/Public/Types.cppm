@@ -21,9 +21,13 @@ export namespace Nexus {
     using float32 = float;
     using float64 = double;
 
-    // Size / pointer-related
+    // Size-related
     using usize = std::size_t;
     using isize = std::ptrdiff_t;
+
+    // Pointer-sized integers
+    using uptr = std::uintptr_t;
+    using iptr = std::intptr_t;
 
     // Byte type
     using byte = std::byte;
