@@ -6,10 +6,6 @@ module;
 
 export module NexusTests;
 
-TEST(TestExample, AdditionWorks) {
-    EXPECT_EQ(2 + 2, 4);
-}
-
 export namespace Nexus::Tests {
     int RunTests(int argc, char* argv[]) {
         ::testing::InitGoogleTest(&argc, argv);
