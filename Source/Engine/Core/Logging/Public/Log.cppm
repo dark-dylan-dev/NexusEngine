@@ -50,6 +50,11 @@ export namespace Nexus {
 
         std::atomic<bool> m_Running{false};
         std::jthread m_BackgroundThread;
+
+        std::atomic<bool> m_FlushRequested{false};
+        std::atomic<uint64> m_FlushGeneration{0};
+        std::mutex m_FlushMutex;
+        std::condition_variable m_FlushCv;
     };
 
 } // namespace Nexus
