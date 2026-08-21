@@ -1,5 +1,5 @@
 // Toggle zwischen drei Theme-Zuständen und speichere im localStorage
-const THEME_CLASSES = ['theme-default', 'theme-round', 'theme-robot'];
+const THEME_CLASSES = ['theme-default', 'theme-league', 'theme-round', 'theme-robot'];
 // Ermögliche das Umschalten per Button/Funktion (z.B. für onclick im HTML)
 function toggleThemeVariant() {
 	let idx = getCurrentThemeIndex();

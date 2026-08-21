@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Spectral+SC:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
+
+html.theme-league {
+    /* primary theme color - Hextech Gold. Affects the entire websites color scheme: links, arrows, labels, ... */
+    --primary-color: #c8aa6e;
+    --primary-dark-color: #a17f3d;
+    --primary-light-color: #c8aa6e;
+    --primary-lighter-color: #e8dcc0;
+    --primary-lightest-color: #f5f0e6;
+
+    --fragment-background: #f0f2f5;
+    --code-background: #f0f2f5;
+
+    /* page base colors - parchment/light Demacia-esque palette */
+    --page-background-color: #f5f2ea;
+    --page-foreground-color: #1e2328;
+    --page-secondary-foreground-color: #3c3c41;
+
+    --border-radius-large: 2px;
+    --border-radius-small: 2px;
+    --border-radius-medium: 2px;
+
+    --spacing-small: 3px;
+    --spacing-medium: 6px;
+    --spacing-large: 12px;
+
+    --top-height: 125px;
+
+    --side-nav-background: #785a28;
+    --side-nav-foreground: #cdbe91;
+    --header-foreground: #f0e6d2;
+    --searchbar-border-radius: var(--border-radius-medium);
+    --header-background: #785a28;
+
+    --toc-background: #091428;
+    --toc-foreground: #cdbe91;
+
+    --font-family: "Spectral SC", "Beaufort for LOL", Georgia, serif;
+    --page-font-size: 14px;
+    --box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    --separator-color: #785a28;
+}
+
+html.theme-league.dark-mode {
+    color-scheme: dark;
+
+    /* Hextech gold glows brighter against the void, cyan accents for magic/mana */
+    --primary-color: #c8aa6e;
+    --primary-dark-color: #785a28;
+    --primary-light-color: #c8aa6e;
+    --primary-lighter-color: #1e2328;
+    --primary-lightest-color: #010a13;
+
+    --fragment-background: #010a13;
+    --code-background: #010a13;
+
+    --page-background-color: #0a1428;
+    --page-foreground-color: #cdfafa;
+    --page-secondary-foreground-color: #a09b8c;
+    --separator-color: #1e2328;
+    --toc-background: #010a13;
+    --toc-foreground: #cdbe91;
+
+    --side-nav-background: #010a13;
+    --side-nav-foreground: #c8aa6e;
+    --header-background: #010a13;
+    --header-foreground: #f0e6d2;
+}
