@@ -3,11 +3,14 @@ Build/
 # CLion
 .idea/
 
-# Scripts
-runFormat.ps1
+# Personnal scripts
+_Scripts/
 
 # Visual Studio
 .vs/
 out/
 CMakeSettings.json
 vc140.pdb
+
+# Docs
+Docs/Generated_HTML/
