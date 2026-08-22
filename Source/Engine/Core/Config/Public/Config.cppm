@@ -10,13 +10,26 @@ export namespace Nexus::Config {
     constexpr std::string_view engineVersion = "0.0.1";
 
     // --- Build Info ---
-#ifdef NDEBUG
-    constexpr bool isDebug = false;
-    constexpr std::string_view buildType = "Release";
-#else
-    constexpr bool isDebug = true;
-    constexpr std::string_view buildType = "Debug";
+    enum class BuildMode { Debug, RelWithDebInfo, Release };
+
+#if !defined(APP_BUILD_MODE)
+#    error "APP_BUILD_MODE was not defined by the build system"
 #endif
+
+    constexpr BuildMode buildMode =
+#if APP_BUILD_MODE == 0
+        BuildMode::Debug;
+#elif APP_BUILD_MODE == 1
+        BuildMode::RelWithDebInfo;
+#else
+        BuildMode::Release;
+#endif
+
+    constexpr bool isDebug = (buildMode == BuildMode::Debug);
+
+    constexpr std::string_view buildType = buildMode == BuildMode::Debug            ? "Debug"
+                                           : buildMode == BuildMode::RelWithDebInfo ? "RelWithDebInfo"
+                                                                                    : "Release";
 
     // --- Platform & Architecture ---
 #if defined(_WIN32)

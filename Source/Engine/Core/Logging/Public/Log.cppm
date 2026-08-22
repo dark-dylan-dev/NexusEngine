@@ -8,6 +8,12 @@ import NE.Engine.Core.Types;
 import std;
 
 export namespace Nexus {
+    enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
+
+    struct LogEntry {
+        std::string Formatted;
+    };
+
     class Logger {
     public:
         explicit Logger(const std::filesystem::path& path = std::filesystem::path("Log.log"),

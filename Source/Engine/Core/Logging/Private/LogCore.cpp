@@ -82,9 +82,7 @@ namespace Nexus {
     }
 
     void Logger::LogTrace(std::string_view message) {
-        s_CalledLogTrace.store(true, std::memory_order_release);
         Log(LogLevel::Trace, message);
-        s_CalledLogTrace.store(false, std::memory_order_release);
     }
 
     void Logger::LogDebug(std::string_view message) {
@@ -178,6 +176,7 @@ namespace Nexus {
 
         std::string finalMessage = std::format("{}", message);
         if (level == LogLevel::Trace) {
+            finalMessage += '\n';
             finalMessage += CaptureStacktrace();
         }
 
