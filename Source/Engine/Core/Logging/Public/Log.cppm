@@ -55,6 +55,8 @@ export namespace Nexus {
         std::atomic<uint64> m_FlushGeneration{0};
         std::mutex m_FlushMutex;
         std::condition_variable m_FlushCv;
+
+        static inline std::atomic<bool> s_CalledLogTrace{false};
     };
 
 } // namespace Nexus
