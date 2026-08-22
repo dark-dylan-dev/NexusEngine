@@ -44,4 +44,8 @@ namespace Nexus::ECS {
         return entity.index < m_generations.size() && entity.index != 0 &&
                m_generations[entity.index] == entity.generation && m_alive[entity.index];
     }
+
+    void World::Clear() {
+        m_registry.Clear();
+    }
 } // namespace Nexus::ECS

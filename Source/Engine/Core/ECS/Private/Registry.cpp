@@ -8,4 +8,10 @@ namespace Nexus::ECS {
             if (pool)
                 pool->Remove(entity);
     }
+
+    void Registry::Clear() {
+        for (const auto& pool : m_pools)
+            if (pool)
+                pool->Clear();
+    }
 } // namespace Nexus::ECS

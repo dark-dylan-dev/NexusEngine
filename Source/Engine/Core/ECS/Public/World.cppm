@@ -17,6 +17,8 @@ export namespace Nexus::ECS {
 
         bool IsAlive(Entity entity) const;
 
+        void Clear();
+
         template <typename... Components>
         void Reserve(usize capacity) {
             (m_registry.Pool<Components>().Reserve(capacity), ...);

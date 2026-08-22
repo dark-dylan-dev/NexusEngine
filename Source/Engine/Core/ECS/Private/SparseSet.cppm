@@ -105,6 +105,12 @@ export namespace Nexus::ECS {
             return m_dense;
         }
 
+        void Clear() {
+            m_sparse.clear();
+            m_dense.clear();
+            m_denseEntities.clear();
+        }
+
     private:
         std::vector<Entity> m_denseEntities;
         std::vector<T> m_dense;
