@@ -140,7 +140,6 @@ export namespace Nexus::ECS {
 
         template <Component... Components>
         class QueryView {
-
         public:
             struct Iterator {
                 using value_type = std::tuple<Entity, Components&...>;
