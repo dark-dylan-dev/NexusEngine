@@ -8,6 +8,9 @@ export namespace Nexus::ECS {
     struct Entity {
         uint32 index;
         uint32 generation;
+        bool operator==(const Entity& b) const {
+            return index == b.index && generation == b.generation;
+        }
     };
 
     constexpr Entity NullEntity{};
