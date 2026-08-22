@@ -59,6 +59,7 @@ TEST_F(LoggerTest, LogTrace) {
     m_Logger.Flush();
 
     EXPECT_TRUE(ReadLogFile().contains("Trace message"));
+    EXPECT_TRUE(ReadLogFile().contains("Stack trace (most recent call first):"));
 }
 
 TEST_F(LoggerTest, LogDebug) {
