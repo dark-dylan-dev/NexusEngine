@@ -8,6 +8,8 @@ import std;
 
 export namespace Nexus {
 
+    // Inspired from Dmitry Vyukov's MPMC bounded queue
+    // See: https://web.archive.org/web/20110410230018/http://www.1024cores.net/home/lock-free-algorithms/queues/bounded-mpmc-queue
     template <typename T, usize N>
     class RingBuffer {
     public:
