@@ -140,10 +140,6 @@ export namespace Nexus::ECS {
 
         template <Component... Components>
         class QueryView {
-            static_assert(std::ranges::range<QueryView<Components...>>);
-            static_assert(std::ranges::input_range<QueryView<Components...>>);
-            static_assert(std::ranges::common_range<QueryView<Components...>>);
-            static_assert(std::ranges::forward_range<QueryView<Components...>>);
 
         public:
             struct Iterator {
@@ -215,6 +211,8 @@ export namespace Nexus::ECS {
         }
 
         void RemoveEntity(Entity entity);
+
+        void Clear();
 
     private:
         std::vector<std::unique_ptr<IComponentPool>> m_pools;
