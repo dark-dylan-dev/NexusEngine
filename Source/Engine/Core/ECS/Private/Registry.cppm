@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: MIT
 
+module;
+
+#include <Platform/DLL/Export.hpp>
+
 export module NE.Engine.ECS.Registry;
 
 import NE.Engine.Core.Types;
@@ -18,13 +22,22 @@ export namespace Nexus::ECS {
     }
 
     template <Component T>
-    ComponentId ComponentTypeId() {
+    NEXUS_API ComponentId ComponentTypeId() {
         static const ComponentId id = NextComponentId();
         return id;
     }
 
-    class Registry {
+    class NEXUS_API Registry {
     public:
+        Registry() = default;
+        ~Registry() = default;
+
+        Registry(const Registry&) = delete;
+        Registry& operator=(const Registry&) = delete;
+
+        Registry(Registry&&) noexcept = default;
+        Registry& operator=(Registry&&) noexcept = default;
+
         template <Component T>
         ComponentPool<T>& Pool() {
             const auto id = ComponentTypeId<T>();
@@ -139,7 +152,7 @@ export namespace Nexus::ECS {
         }
 
         template <Component... Components>
-        class QueryView {
+        class NEXUS_API QueryView {
         public:
             struct Iterator {
                 using value_type = std::tuple<Entity, Components&...>;

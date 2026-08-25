@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: MIT
 
+module;
+
+#include <Platform/DLL/Export.hpp>
+
 export module NE.Engine.ECS.ComponentPool;
 
 import NE.Engine.Core.Types;
@@ -10,7 +14,7 @@ import NE.Engine.ECS.SparseSet;
 import std;
 
 export namespace Nexus::ECS {
-    class IComponentPool {
+    class NEXUS_API IComponentPool {
     public:
         virtual ~IComponentPool() = default;
 
@@ -22,7 +26,7 @@ export namespace Nexus::ECS {
     };
 
     template <Component T>
-    class ComponentPool final : public IComponentPool {
+    class NEXUS_API ComponentPool final : public IComponentPool {
     public:
         template <typename... Args>
         T& Emplace(Entity entity, Args&&... args) {

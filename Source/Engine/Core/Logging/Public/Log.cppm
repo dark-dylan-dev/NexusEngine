@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: MIT
 
+module;
+
+#include <Platform/DLL/Export.hpp>
+
 export module NE.Engine.Core.Log;
 
 export import NE.Engine.Core.Log.RingBuffer;
@@ -10,11 +14,11 @@ import std;
 export namespace Nexus {
     enum class LogLevel { Trace, Debug, Info, Warn, Error, Fatal };
 
-    struct LogEntry {
+    struct NEXUS_API LogEntry {
         std::string Formatted;
     };
 
-    class Logger {
+    class NEXUS_API Logger {
     public:
         explicit Logger(const std::filesystem::path& path = std::filesystem::path("Log.log"),
                         bool enableConsole = true);

@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: MIT
 
+module;
+
+#include <Platform/DLL/Export.hpp>
+
 export module NE.Engine.ECS.SparseSet;
 
 import NE.Engine.Core.Types;
@@ -9,7 +13,7 @@ import std;
 
 export namespace Nexus::ECS {
     template <typename T>
-    class SparseSet {
+    class NEXUS_API SparseSet {
     public:
         template <typename... Args>
         T& Emplace(Entity entity, Args&&... args) {

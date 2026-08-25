@@ -1,7 +1,12 @@
 # SPDX-License-Identifier: MIT
 
-add_library(NexusEngine)
+add_library(NexusEngine SHARED)
+set_target_properties(NexusEngine PROPERTIES PREFIX "")
 
+target_compile_definitions(NexusEngine PRIVATE NEXUS_ENGINE_BUILD)
+target_compile_options(NexusEngine PRIVATE
+        $<$<AND:$<NOT:$<PLATFORM_ID:Windows>>,$<CXX_COMPILER_ID:GNU,Clang,AppleClang>>:-fvisibility=hidden -fvisibility-inlines-hidden>
+)
 target_compile_definitions(NexusEngine PRIVATE
         $<$<CONFIG:Debug>:APP_BUILD_MODE=0>
         $<$<CONFIG:RelWithDebInfo>:APP_BUILD_MODE=1>
@@ -23,3 +28,20 @@ target_sources(NexusEngine PUBLIC
         FILE_SET engine_module TYPE CXX_MODULES
         FILES NexusEngine.cppm
 )
+
+if(WIN32)
+    add_custom_command(
+            TARGET NexusEngine POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:NexusEngine>"
+            "$<TARGET_FILE_DIR:NexusEditor>"
+    )
+    if(MSVC AND $<$<NOT:$<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>>>>)
+        add_custom_command(
+                TARGET NexusEngine POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<TARGET_PDB_FILE:NexusEngine>"
+                "$<TARGET_FILE_DIR:NexusEditor>/NexusEngine.pdb"
+        )
+    endif()
+endif()

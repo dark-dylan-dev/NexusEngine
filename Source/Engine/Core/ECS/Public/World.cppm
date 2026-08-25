@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: MIT
 
+module;
+
+#include <Platform/DLL/Export.hpp>
+
 export module NE.Engine.ECS.World;
 
 import NE.Engine.Core.Types;
@@ -10,7 +14,7 @@ import NE.Engine.ECS.Registry;
 import std;
 
 export namespace Nexus::ECS {
-    class World {
+    class NEXUS_API World {
     public:
         Entity CreateEntity();
         void DestroyEntity(Entity entity);
