@@ -36,7 +36,10 @@ export namespace Nexus {
 
         // Crash handling
         static void InstallCrashHandler();
-        static void HandleCrash(int signal);
+        static void HandleSignal(int signal);
+        static void HandleTerminate();
+        static void WriteCrashReport(const std::string& reason, const std::string& details,
+                                     const std::string& stacktrace);
 
         void WriteToFile(LogEntry& entry);
         void WriteToConsole(LogEntry& entry);
