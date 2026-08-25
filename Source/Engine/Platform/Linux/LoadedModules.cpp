@@ -22,7 +22,7 @@ namespace Nexus {
                 return {};
 
             if (static_cast<size_t>(length) < buffer.size()) {
-                return std::filesystem::path(buffer.data(), static_cast<size_t>(length));
+                return std::filesystem::path(std::string(buffer.data(), static_cast<size_t>(length)));
             }
 
             buffer.resize(buffer.size() * 2);

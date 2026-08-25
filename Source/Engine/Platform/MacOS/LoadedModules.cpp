@@ -23,7 +23,7 @@ namespace Nexus {
         if (_NSGetExecutablePath(buffer.data(), &size) != 0)
             return {};
 
-        return std::filesystem::path(buffer.data());
+        return std::filesystem::path(std::string(buffer.data()));
     }
 
     std::string GetExecutableName() {
