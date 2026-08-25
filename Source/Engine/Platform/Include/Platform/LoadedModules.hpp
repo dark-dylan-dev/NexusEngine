@@ -2,6 +2,7 @@
 
 #pragma once
 
+// clang-format off
 #include <Platform/DLL/Export.hpp>
 
 #include <cstddef>
@@ -9,6 +10,7 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+// clang-format on
 
 namespace Nexus {
     struct NEXUS_API ModuleRange {

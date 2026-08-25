@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: MIT
+
+#include <Platform/LoadedModules.hpp>
+#include <format>
+
+namespace Nexus {
+    std::string ResolveModuleForAddress(uintptr_t addr, const std::vector<ModuleRange>& modules) {
+        for (const auto& mod : modules) {
+            if (addr >= mod.base && addr < mod.end) {
+                const uintptr_t offset = addr - mod.base;
+                return std::format("{} + 0x{:x}", mod.name, offset);
+            }
+        }
+        return "unknown";
+    }
+} // namespace Nexus
