@@ -92,10 +92,24 @@ namespace Nexus {
 
 #elif defined(__linux__)
 
+    std::filesystem::path GetExecutablePath()
+    {
+        char buffer[4096];
+
+        const ssize_t length =
+            readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
+
+        if (length == -1)
+            return {};
+
+        buffer[length] = '\0';
+        return std::filesystem::path(buffer);
+    }
+
     namespace {
 
         int PhdrCallback(struct dl_phdr_info* info, size_t /*size*/, void* data) {
-            auto* result = reinterpret_cast<std::vector<ModuleRange>*>(data);
+            auto* result = reinterpret_cast<std::vector<Nexus::ModuleRange>*>(data);
 
             uintptr_t base = info->dlpi_addr;
             uintptr_t maxEnd = base;
