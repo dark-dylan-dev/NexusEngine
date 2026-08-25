@@ -16,5 +16,23 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_link_libraries(NexusTests PRIVATE "-lstdc++exp")
 endif()
 
+if(WIN32)
+    add_custom_command(
+            TARGET NexusTests POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:NexusEngine>"
+            "$<TARGET_FILE_DIR:NexusTests>"
+    )
+    if(MSVC AND $<$<NOT:$<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>>>>)
+        add_custom_command(
+                TARGET NexusTests POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<TARGET_PDB_FILE:NexusEngine>"
+                "$<TARGET_FILE_DIR:NexusTests>/NexusEngine.pdb"
+        )
+    endif()
+endif()
+
+
 include(GoogleTest)
 gtest_discover_tests(NexusTests)
