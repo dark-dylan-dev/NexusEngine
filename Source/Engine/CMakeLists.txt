@@ -4,8 +4,9 @@ add_library(NexusEngine SHARED)
 set_target_properties(NexusEngine PROPERTIES PREFIX "")
 
 target_compile_definitions(NexusEngine PRIVATE NEXUS_ENGINE_BUILD)
-target_compile_options(NexusEngine PRIVATE
-        $<$<AND:$<NOT:$<PLATFORM_ID:Windows>>,$<CXX_COMPILER_ID:GNU,Clang,AppleClang>>:-fvisibility=hidden -fvisibility-inlines-hidden>
+set_target_properties(NexusEngine PROPERTIES
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN ON
 )
 target_compile_definitions(NexusEngine PRIVATE
         $<$<CONFIG:Debug>:APP_BUILD_MODE=0>
