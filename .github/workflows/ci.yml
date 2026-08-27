@@ -6,10 +6,15 @@ on:
   pull_request:
     branches: ["master"]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build:
     strategy:
-      fail-fast: false
+      fail-fast: true
 
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -140,3 +145,17 @@ jobs:
       - name: Test
         working-directory: "${{ github.workspace }}/build/Tests"
         run: ctest --build-config "${{ matrix.build_type }}"
+
+      - name: Generate Doxygen
+        run: doxygen Doxyfile
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload documentation
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: Docs/Generated_HTML
+
+      - name: Deploy
+        uses: actions/deploy-pages@v5
