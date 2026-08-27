@@ -148,7 +148,7 @@ jobs:
 
   docs:
     needs: build
-    runs-on: [self-hosted, windows-local, x64]
+    runs-on: [self-hosted, docker-local, linux-x64]
 
     steps:
       - name: Checkout
@@ -170,7 +170,7 @@ jobs:
     environment:
       name: github-pages
       url: "https://dark-dylan-dev.github.io/NexusEngine/"
-    runs-on: [self-hosted, windows-local, x64]
+    runs-on: [self-hosted, docker-local, linux-x64]
 
     steps:
       - name: Deploy to GitHub Pages
