@@ -15,6 +15,11 @@ setModuleID()
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
+# Default debug build
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+endif()
+
 project(NexusEngine VERSION 0.0.1 LANGUAGES CXX)
 
 add_subdirectory(Source)
