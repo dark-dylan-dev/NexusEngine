@@ -2,9 +2,9 @@ name: CMake on multiple platforms
 
 on:
   push:
-    branches: [ "test-docker" ]
+    branches: ["test-docker"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
   build:
@@ -113,14 +113,12 @@ jobs:
 
       - name: Check GCC
         if: matrix.c_compiler == 'gcc'
-        shell: ${{ matrix.os == 'windows-latest' && 'powershell' || 'bash' }}
         run: |
           gcc --version
           g++ --version
 
       - name: Check Clang
         if: matrix.c_compiler == 'clang'
-        shell: ${{ matrix.os == 'windows-latest' && 'powershell' || 'bash' }}
         run: |
           clang --version
           clang++ --version
@@ -132,44 +130,54 @@ jobs:
           cl
 
       - name: Check CMake and Ninja
-        shell: ${{ matrix.os == 'windows-latest' && 'powershell' || 'bash' }}
         run: |
           cmake --version
           ninja --version
 
-      - name: Configure CMake
-        shell: ${{ matrix.os == 'windows-latest' && 'powershell' || 'bash' }}
+      - name: Configure CMake (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: >
           cmake
-          -B ${{
-            matrix.os == 'windows-latest'
-            && steps.strings-windows.outputs.build-output-dir
-            || steps.strings-linux.outputs.build-output-dir
-          }}
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -B "${{ steps.strings-linux.outputs.build-output-dir }}"
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -DNEXUS_BUILD_TEST=ON
           -G Ninja
-          -S ${{ github.workspace }}
+          -S "${{ github.workspace }}"
 
-      - name: Build
-        shell: ${{ matrix.os == 'windows-latest' && 'powershell' || 'bash' }}
+      - name: Configure CMake (Windows)
+        if: matrix.os == 'windows-latest'
         run: >
           cmake
-          --build "${{
-            matrix.os == 'windows-latest'
-            && steps.strings-windows.outputs.build-output-dir
-            || steps.strings-linux.outputs.build-output-dir
-          }}"
-          --config ${{ matrix.build_type }}
+          -B "${{ steps.strings-windows.outputs.build-output-dir }}"
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DNEXUS_BUILD_TEST=ON
+          -G Ninja
+          -S "${{ github.workspace }}"
 
-      - name: Test
-        shell: ${{ matrix.os == 'windows-latest' && 'powershell' || 'bash' }}
-        working-directory: >
-          ${{
-            matrix.os == 'windows-latest'
-            && steps.strings-windows.outputs.build-output-dir
-            || steps.strings-linux.outputs.build-output-dir
-          }}/Tests
-        run: ctest --build-config ${{ matrix.build_type }}
+      - name: Build (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: >
+          cmake
+          --build "${{ steps.strings-linux.outputs.build-output-dir }}"
+          --config "${{ matrix.build_type }}"
+
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        run: >
+          cmake
+          --build "${{ steps.strings-windows.outputs.build-output-dir }}"
+          --config "${{ matrix.build_type }}"
+
+      - name: Test (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: "${{ steps.strings-linux.outputs.build-output-dir }}/Tests"
+        run: ctest --build-config "${{ matrix.build_type }}"
+
+      - name: Test (Windows)
+        if: matrix.os == 'windows-latest'
+        working-directory: "${{ steps.strings-windows.outputs.build-output-dir }}/Tests"
+        run: ctest --build-config "${{ matrix.build_type }}"
