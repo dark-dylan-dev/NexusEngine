@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     jq \
     sudo \
     libicu-dev \
+    libwayland-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN wget -qO- https://apt.kitware.com/keys/kitware-archive-latest.asc \
