@@ -30,19 +30,10 @@ target_sources(NexusEngine PUBLIC
         FILES NexusEngine.cppm
 )
 
-if(WIN32)
+if(WIN32 AND MSVC AND CMAKE_BUILD_TYPE MATCHES "^(Debug|RelWithDebInfo)$")
     add_custom_command(
-            TARGET NexusEngine POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "$<TARGET_FILE:NexusEngine>"
-            "$<TARGET_FILE_DIR:NexusEditor>"
+        TARGET NexusEngine POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E rm -f
+            "$<TARGET_FILE_DIR:NexusEngine>/NexusEngine.ilk"
     )
-    if(MSVC AND $<$<NOT:$<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>>>>)
-        add_custom_command(
-                TARGET NexusEngine POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_PDB_FILE:NexusEngine>"
-                "$<TARGET_FILE_DIR:NexusEditor>/NexusEngine.pdb"
-        )
-    endif()
 endif()
