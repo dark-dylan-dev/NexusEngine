@@ -79,4 +79,26 @@ export namespace Nexus {
         return (value & flag) == flag;
     }
 
+    // idea from: https://stackoverflow.com/a/56766138
+    // made it simpler and consteval
+    template <typename T>
+    consteval auto TypeName() {
+#if defined(__clang__)
+        constexpr std::string_view prefix = "[T = ";
+        constexpr std::string_view suffix = "]";
+        constexpr std::string_view func = __PRETTY_FUNCTION__;
+#elif defined(__GNUC__)
+        constexpr std::string_view prefix = "[with T = ";
+        constexpr std::string_view suffix = "]";
+        constexpr std::string_view func = __PRETTY_FUNCTION__;
+#elif defined(_MSC_VER)
+        constexpr std::string_view prefix = "TypeName<";
+        constexpr std::string_view suffix = ">(void)";
+        constexpr std::string_view func = __FUNCSIG__;
+#endif
+        constexpr auto start = func.find(prefix) + prefix.size();
+        constexpr auto end = func.rfind(suffix);
+        return func.substr(start, end - start);
+    }
+
 } // namespace Nexus
