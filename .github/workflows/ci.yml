@@ -1,0 +1,142 @@
+name: NexusEngine / CMake on multiple platforms
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release, Debug]
+        c_compiler: [gcc, clang, cl]
+
+        include:
+          - os: ubuntu-latest
+            runner: [self-hosted, docker-local, linux-x64]
+
+          - os: windows-latest
+            runner: [self-hosted, windows-local, x64]
+
+          - c_compiler: gcc
+            cpp_compiler: g++
+
+          - c_compiler: clang
+            cpp_compiler: clang++
+
+          - c_compiler: cl
+            cpp_compiler: cl
+
+        exclude:
+          - os: ubuntu-latest
+            c_compiler: cl
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup MSVC
+        if: matrix.os == 'windows-latest' && matrix.c_compiler == 'cl'
+        shell: powershell
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+
+          if (-not (Test-Path $vswhere)) {
+            throw "vswhere.exe not found at $vswhere"
+          }
+
+          $vsPath = & $vswhere `
+            -latest `
+            -products * `
+            -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+            -property installationPath
+
+          if (-not $vsPath) {
+            throw "Visual Studio installation with MSVC tools not found."
+          }
+
+          Write-Host "Visual Studio: $vsPath"
+
+          $vsDevCmd = Join-Path $vsPath "Common7\Tools\VsDevCmd.bat"
+          $envDump = Join-Path $env:RUNNER_TEMP "vs-env.txt"
+
+          cmd /c "`"$vsDevCmd`" -arch=x64 -host_arch=x64 && set > `"$envDump`""
+
+          if ($LASTEXITCODE -ne 0) {
+            throw "VsDevCmd.bat failed."
+          }
+
+          Get-Content $envDump | ForEach-Object {
+            if ($_ -match '^([^=]+)=(.*)$') {
+              $name = $matches[1]
+              $value = $matches[2]
+
+              if ($name -ne "Path" -and $name -ne "PATHEXT") {
+                "$name=$value" >> $env:GITHUB_ENV
+              }
+            }
+          }
+
+          $pathLine = Get-Content $envDump |
+            Where-Object { $_ -match '^Path=' } |
+            Select-Object -First 1
+
+          if ($pathLine) {
+            $pathValue = $pathLine.Substring(5)
+            $pathValue -split ';' |
+              Where-Object { $_ } |
+              ForEach-Object {
+                $_ >> $env:GITHUB_PATH
+              }
+          }
+
+      - name: Check GCC
+        if: matrix.c_compiler == 'gcc'
+        run: |
+          gcc --version
+          g++ --version
+
+      - name: Check Clang
+        if: matrix.c_compiler == 'clang'
+        run: |
+          clang --version
+          clang++ --version
+
+      - name: Check MSVC
+        if: matrix.c_compiler == 'cl'
+        shell: cmd
+        run: |
+          cl
+
+      - name: Check CMake and Ninja
+        run: |
+          cmake --version
+          ninja --version
+
+      - name: Configure CMake
+        run: >
+          cmake
+          -B "${{ github.workspace }}/build"
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DNEXUS_BUILD_TEST=ON
+          -G Ninja
+          -S "${{ github.workspace }}"
+
+      - name: Build
+        run: >
+          cmake
+          --build "${{ github.workspace }}/build"
+          --config "${{ matrix.build_type }}"
+
+      - name: Test
+        working-directory: "${{ github.workspace }}/build/Tests"
+        run: ctest --build-config "${{ matrix.build_type }}"

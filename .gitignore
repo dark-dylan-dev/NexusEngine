@@ -14,3 +14,6 @@ vc140.pdb
 
 # Docs
 Docs/Generated_HTML/
+
+# Local docker runner
+LocalRunner/
