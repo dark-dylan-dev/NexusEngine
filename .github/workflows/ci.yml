@@ -42,7 +42,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set reusable strings
+      - name: Set reusable strings (Windows)
+        if: matrix.os == 'windows-latest'
+        id: strings
+        shell: powershell
+        run: |
+          "build-output-dir=${{ github.workspace }}\build" >> $env:GITHUB_OUTPUT
+
+      - name: Set reusable strings (Linux)
+        if: matrix.os == 'ubuntu-latest'
         id: strings
         shell: bash
         run: |
@@ -103,7 +111,16 @@ jobs:
               }
           }
 
-      - name: Resolve actual compiler command
+      - name: Resolve actual compiler command (Windows)
+        if: matrix.os == 'windows-latest'
+        id: cc
+        shell: powershell
+        run: |
+          "c=${{ matrix.c_compiler }}" >> $env:GITHUB_OUTPUT
+          "cxx=${{ matrix.cpp_compiler }}" >> $env:GITHUB_OUTPUT
+
+      - name: Resolve actual compiler command (Linux)
+        if: matrix.os == 'ubuntu-latest'
         id: cc
         shell: bash
         run: |
