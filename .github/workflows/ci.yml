@@ -75,6 +75,7 @@ jobs:
         -DCMAKE_C_COMPILER=${{ steps.cc.outputs.c }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -DNEXUS_BUILD_TEST=ON
+        -G Ninja
         -S ${{ github.workspace }}
 
     - name: Build
