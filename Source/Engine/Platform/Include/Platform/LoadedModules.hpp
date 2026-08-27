@@ -2,25 +2,20 @@
 
 #pragma once
 
-// clang-format off
-#include <Platform/DLL/Export.hpp>
-
-#include <cstddef>
 #include <cstdint>
 #include <filesystem>
 #include <string>
 #include <vector>
-// clang-format on
 
 namespace Nexus {
-    struct NEXUS_API ModuleRange {
+    struct ModuleRange {
         uintptr_t base;
         uintptr_t end;
         std::string name;
     };
 
-    NEXUS_API std::filesystem::path GetExecutablePath();
-    NEXUS_API std::string GetExecutableName();
-    NEXUS_API std::vector<ModuleRange> GetLoadedModules();
-    NEXUS_API std::string ResolveModuleForAddress(uintptr_t addr, const std::vector<ModuleRange>& modules);
+    std::filesystem::path GetExecutablePath();
+    std::string GetExecutableName();
+    std::vector<ModuleRange> GetLoadedModules();
+    std::string ResolveModuleForAddress(uintptr_t addr, const std::vector<ModuleRange>& modules);
 } // namespace Nexus

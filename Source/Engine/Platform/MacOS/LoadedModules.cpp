@@ -7,7 +7,6 @@
 #include <mach-o/loader.h>
 
 #include <algorithm>
-#include <cstdint>
 // clang-format on
 
 namespace Nexus {

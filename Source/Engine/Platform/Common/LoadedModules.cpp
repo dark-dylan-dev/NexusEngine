@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 
+// clang-format off
 #include <Platform/LoadedModules.hpp>
+
 #include <format>
+// clang-format on
 
 namespace Nexus {
     std::string ResolveModuleForAddress(uintptr_t addr, const std::vector<ModuleRange>& modules) {
