@@ -32,6 +32,13 @@ export namespace Nexus {
     // Byte type
     using byte = std::byte;
 
+    template <typename T, typename... Excluded>
+    concept NoneOf = (!std::same_as<std::remove_cv_t<T>, Excluded> && ...);
+
+    template <typename T>
+    concept Numeric = std::is_arithmetic_v<T> &&
+                      NoneOf<T, bool, char, signed char, unsigned char, wchar_t, char8_t, char16_t, char32_t>;
+
     template <typename T>
     struct EnableFlagOperators : std::false_type {};
 

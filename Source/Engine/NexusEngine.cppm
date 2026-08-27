@@ -11,3 +11,6 @@ export import NE.Engine.Core.ECS;
 export import NE.Engine.Core.Log;
 export import NE.Engine.Core.Types;
 export import NE.Engine.Core.Window;
+
+// Math
+export import NE.Engine.Math.Vec2;
