@@ -1,14 +1,15 @@
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-ARG RUNNER_VERSION=2.321.0
+ARG RUNNER_VERSION=2.337.0
 
 ARG GCC_VERSION=16
-ARG LLVM_VERSION=21
+ARG LLVM_VERSION=22
 
+# APT Packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    ninja-build \
+    unzip \
     git \
     mingw-w64 \
     ca-certificates \
@@ -21,8 +22,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo \
     libicu-dev \
     libwayland-dev \
+    pkg-config \
+    libx11-dev \
+    libxrandr-dev \
+    libxinerama-dev \
+    libxcursor-dev \
+    libxi-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Ninja
+RUN wget -q https://github.com/ninja-build/ninja/releases/download/v1.13.2/ninja-linux.zip \
+    && unzip ninja-linux.zip -d /usr/local/bin \
+    && chmod +x /usr/local/bin/ninja \
+    && rm ninja-linux.zip
+
+# CMake
 RUN wget -qO- https://apt.kitware.com/keys/kitware-archive-latest.asc \
       | gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ noble main" \
@@ -31,6 +45,7 @@ RUN wget -qO- https://apt.kitware.com/keys/kitware-archive-latest.asc \
     apt-get install -y --no-install-recommends cmake && \
     rm -rf /var/lib/apt/lists/*
 
+# GCC version ${GCC_VERSION}
 RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -39,6 +54,7 @@ RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${GCC_VERSION} 100 && \
     rm -rf /var/lib/apt/lists/*
 
+# LLVM version ${LLVM_VERSION}
 RUN wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh && \
     chmod +x /tmp/llvm.sh && \
     /tmp/llvm.sh ${LLVM_VERSION} all && \
@@ -47,6 +63,7 @@ RUN wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh && \
     rm -f /tmp/llvm.sh && \
     rm -rf /var/lib/apt/lists/*
 
+# GitHub Actions runner download
 RUN useradd -m runner && \
     mkdir -p /home/runner/actions-runner && \
     cd /home/runner/actions-runner && \
