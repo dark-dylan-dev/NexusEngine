@@ -1,8 +1,8 @@
-name: CMake on multiple platforms
+name: NexusEngine / CMake on multiple platforms
 
 on:
   push:
-    branches: ["test-docker"]
+    branches: ["master"]
   pull_request:
     branches: ["master"]
 
