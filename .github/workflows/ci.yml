@@ -40,21 +40,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set reusable strings (Windows)
-        if: matrix.os == 'windows-latest'
-        id: strings-windows
-        shell: powershell
-        run: |
-          "build-output-dir=${{ github.workspace }}\build" >> $env:GITHUB_OUTPUT
-
-      - name: Set reusable strings (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        id: strings-linux
-        shell: bash
-        run: |
-          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        uses: actions/checkout@v6
 
       - name: Setup MSVC
         if: matrix.os == 'windows-latest' && matrix.c_compiler == 'cl'
@@ -134,11 +120,10 @@ jobs:
           cmake --version
           ninja --version
 
-      - name: Configure CMake (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Configure CMake
         run: >
           cmake
-          -B "${{ steps.strings-linux.outputs.build-output-dir }}"
+          -B "${{ github.workspace }}/build"
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
@@ -146,38 +131,12 @@ jobs:
           -G Ninja
           -S "${{ github.workspace }}"
 
-      - name: Configure CMake (Windows)
-        if: matrix.os == 'windows-latest'
+      - name: Build
         run: >
           cmake
-          -B "${{ steps.strings-windows.outputs.build-output-dir }}"
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -DNEXUS_BUILD_TEST=ON
-          -G Ninja
-          -S "${{ github.workspace }}"
-
-      - name: Build (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: >
-          cmake
-          --build "${{ steps.strings-linux.outputs.build-output-dir }}"
+          --build "${{ github.workspace }}/build"
           --config "${{ matrix.build_type }}"
 
-      - name: Build (Windows)
-        if: matrix.os == 'windows-latest'
-        run: >
-          cmake
-          --build "${{ steps.strings-windows.outputs.build-output-dir }}"
-          --config "${{ matrix.build_type }}"
-
-      - name: Test (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        working-directory: "${{ steps.strings-linux.outputs.build-output-dir }}/Tests"
-        run: ctest --build-config "${{ matrix.build_type }}"
-
-      - name: Test (Windows)
-        if: matrix.os == 'windows-latest'
-        working-directory: "${{ steps.strings-windows.outputs.build-output-dir }}/Tests"
+      - name: Test
+        working-directory: "${{ github.workspace }}/build/Tests"
         run: ctest --build-config "${{ matrix.build_type }}"
