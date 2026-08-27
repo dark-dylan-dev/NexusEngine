@@ -44,14 +44,14 @@ jobs:
 
       - name: Set reusable strings (Windows)
         if: matrix.os == 'windows-latest'
-        id: strings
+        id: strings-windows
         shell: powershell
         run: |
           "build-output-dir=${{ github.workspace }}\build" >> $env:GITHUB_OUTPUT
 
       - name: Set reusable strings (Linux)
         if: matrix.os == 'ubuntu-latest'
-        id: strings
+        id: strings-linux
         shell: bash
         run: |
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
@@ -111,28 +111,19 @@ jobs:
               }
           }
 
-      - name: Resolve actual compiler command (Windows)
-        if: matrix.os == 'windows-latest'
-        id: cc
-        shell: powershell
+      - name: Check GCC
+        if: matrix.c_compiler == 'gcc'
+        shell: ${{ matrix.os == 'windows-latest' && 'powershell' || 'bash' }}
         run: |
-          "c=${{ matrix.c_compiler }}" >> $env:GITHUB_OUTPUT
-          "cxx=${{ matrix.cpp_compiler }}" >> $env:GITHUB_OUTPUT
+          gcc --version
+          g++ --version
 
-      - name: Resolve actual compiler command (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        id: cc
-        shell: bash
+      - name: Check Clang
+        if: matrix.c_compiler == 'clang'
+        shell: ${{ matrix.os == 'windows-latest' && 'powershell' || 'bash' }}
         run: |
-          echo "c=${{ matrix.c_compiler }}" >> "$GITHUB_OUTPUT"
-          echo "cxx=${{ matrix.cpp_compiler }}" >> "$GITHUB_OUTPUT"
-
-      - name: Check compilers
-        if: matrix.c_compiler != 'cl'
-        shell: bash
-        run: |
-          ${{ steps.cc.outputs.c }} --version
-          ${{ steps.cc.outputs.cxx }} --version
+          clang --version
+          clang++ --version
 
       - name: Check MSVC
         if: matrix.c_compiler == 'cl'
@@ -141,23 +132,44 @@ jobs:
           cl
 
       - name: Check CMake and Ninja
+        shell: ${{ matrix.os == 'windows-latest' && 'powershell' || 'bash' }}
         run: |
           cmake --version
           ninja --version
 
       - name: Configure CMake
+        shell: ${{ matrix.os == 'windows-latest' && 'powershell' || 'bash' }}
         run: >
-          cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_CXX_COMPILER=${{ steps.cc.outputs.cxx }}
-          -DCMAKE_C_COMPILER=${{ steps.cc.outputs.c }}
+          cmake
+          -B ${{
+            matrix.os == 'windows-latest'
+            && steps.strings-windows.outputs.build-output-dir
+            || steps.strings-linux.outputs.build-output-dir
+          }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -DNEXUS_BUILD_TEST=ON
           -G Ninja
           -S ${{ github.workspace }}
 
       - name: Build
-        run: cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }}
+        shell: ${{ matrix.os == 'windows-latest' && 'powershell' || 'bash' }}
+        run: >
+          cmake
+          --build "${{
+            matrix.os == 'windows-latest'
+            && steps.strings-windows.outputs.build-output-dir
+            || steps.strings-linux.outputs.build-output-dir
+          }}"
+          --config ${{ matrix.build_type }}
 
       - name: Test
-        working-directory: ${{ steps.strings.outputs.build-output-dir }}/Tests
+        shell: ${{ matrix.os == 'windows-latest' && 'powershell' || 'bash' }}
+        working-directory: >
+          ${{
+            matrix.os == 'windows-latest'
+            && steps.strings-windows.outputs.build-output-dir
+            || steps.strings-linux.outputs.build-output-dir
+          }}/Tests
         run: ctest --build-config ${{ matrix.build_type }}
