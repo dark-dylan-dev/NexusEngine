@@ -16,3 +16,9 @@ if(WIN32 AND MSVC AND CMAKE_BUILD_TYPE MATCHES "^(Debug|RelWithDebInfo)$")
             "$<TARGET_FILE_DIR:NexusEditor>/NexusEditor.ilk"
     )
 endif()
+
+if(WIN32)
+    target_sources(NexusEditor PRIVATE
+        ${CMAKE_SOURCE_DIR}/Assets/Windows/NexusEditor.rc
+    )
+endif()
