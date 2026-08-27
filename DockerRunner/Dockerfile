@@ -28,6 +28,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxinerama-dev \
     libxcursor-dev \
     libxi-dev \
+    libxkbcommon-dev \
+    wayland-protocols \
     && rm -rf /var/lib/apt/lists/*
 
 # Ninja
