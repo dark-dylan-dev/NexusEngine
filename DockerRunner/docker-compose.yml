@@ -1,0 +1,12 @@
+services:
+  gh-runner:
+    build: .
+    environment:
+      - GH_PAT=${GH_PAT}
+      - GH_OWNER=${GH_OWNER}
+      - GH_REPO=${GH_REPO}
+      - RUNNER_NAME=docker-local-runner
+      - RUNNER_LABELS=docker-local,linux-x64,self-hosted
+    restart: unless-stopped
+    # runner needs to check out your repo itself (GitHub tells it what to
+    # check out), so no source bind-mount needed here like the old setup

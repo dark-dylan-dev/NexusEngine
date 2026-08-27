@@ -1,0 +1,97 @@
+name: CMake on multiple platforms
+
+on:
+  push:
+    branches: [ "test-docker" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    # Was: runs-on: ${{ matrix.os }}  (ubuntu-latest / windows-latest, GitHub-hosted)
+    # Now: dispatched to your self-hosted Docker runner instead.
+    #
+    # IMPORTANT: a Linux container runner can only truthfully run the
+    # ubuntu-latest legs. It cannot become Windows/MSVC. The windows-latest
+    # + cl combination is excluded below and the matrix instead cross-builds
+    # that leg with mingw on the same runner (see cpp_compiler override).
+    # If you need a REAL MSVC leg reporting into this same workflow, that
+    # requires a second self-hosted runner registered from an actual
+    # Windows machine, labeled e.g. "self-hosted,windows,x64" (see notes
+    # at the bottom of this file).
+    runs-on: [self-hosted, docker-local, linux-x64]
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release, Debug]
+        c_compiler: [gcc, clang, cl]
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: x86_64-w64-mingw32-g++   # mingw cross-compile approximation
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: windows-latest
+            c_compiler: clang
+          - os: ubuntu-latest
+            c_compiler: cl
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Resolve actual compiler command
+      id: cc
+      shell: bash
+      run: |
+        # windows-latest/cl leg runs as a mingw cross-compile on this runner
+        if [ "${{ matrix.c_compiler }}" = "cl" ]; then
+          echo "c=x86_64-w64-mingw32-gcc" >> "$GITHUB_OUTPUT"
+          echo "cxx=x86_64-w64-mingw32-g++" >> "$GITHUB_OUTPUT"
+        else
+          echo "c=${{ matrix.c_compiler }}" >> "$GITHUB_OUTPUT"
+          echo "cxx=${{ matrix.cpp_compiler }}" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=${{ steps.cc.outputs.cxx }}
+        -DCMAKE_C_COMPILER=${{ steps.cc.outputs.c }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DNEXUS_BUILD_TEST=ON
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+    - name: Test
+      # mingw cross-build can't run its own .exe on this Linux runner, so
+      # skip the test step for that leg — build success is all we get for it
+      if: matrix.c_compiler != 'cl'
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}/Tests
+      run: ctest --build-config ${{ matrix.build_type }}
+
+# --- Notes -----------------------------------------------------------------
+# To get a genuine MSVC/windows-latest leg showing in this same Actions run:
+#   1. Register a second self-hosted runner FROM an actual Windows machine
+#      (physical, VM, or cloud instance) — not Docker; MSVC requires the
+#      real OS. Give it labels like: self-hosted, windows, x64
+#   2. Split this job into two jobs (linux-build / windows-build) each with
+#      its own `runs-on` matching the runner that can actually do the work,
+#      instead of one job with a mixed matrix.
