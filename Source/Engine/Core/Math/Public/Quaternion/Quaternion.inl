@@ -5,7 +5,10 @@
 namespace Nexus {
 
     template <std::floating_point T>
-    constexpr Quaternion<T>::Quaternion(T x, T y, T z, T w) : m_x(x), m_y(y), m_z(z), m_w(w) {}
+    constexpr Quaternion<T>::Quaternion(T x, T y, T z, T w) : m_x(x),
+                                                              m_y(y),
+                                                              m_z(z),
+                                                              m_w(w) {}
 
     template <std::floating_point T>
     template <std::floating_point U>
@@ -32,12 +35,8 @@ namespace Nexus {
         const U sr = std::sin(halfRoll);
         const U cr = std::cos(halfRoll);
 
-        return Quaternion(
-            static_cast<T>(sp * cy * cr - cp * sy * sr),
-            static_cast<T>(cp * sy * cr + sp * cy * sr),
-            static_cast<T>(cp * cy * sr - sp * sy * cr),
-            static_cast<T>(cp * cy * cr + sp * sy * sr)
-        );
+        return Quaternion(static_cast<T>(sp * cy * cr - cp * sy * sr), static_cast<T>(cp * sy * cr + sp * cy * sr),
+                          static_cast<T>(cp * cy * sr - sp * sy * cr), static_cast<T>(cp * cy * cr + sp * sy * sr));
     }
 
     template <std::floating_point T>
@@ -48,20 +47,16 @@ namespace Nexus {
         const U c = std::cos(halfAngle);
 
         Vec3<U> normalizedAxis = axis;
-        const U lengthSquared = normalizedAxis[0] * normalizedAxis[0] + normalizedAxis[1] * normalizedAxis[1]
-            + normalizedAxis[2] * normalizedAxis[2];
+        const U lengthSquared = normalizedAxis[0] * normalizedAxis[0] + normalizedAxis[1] * normalizedAxis[1] +
+                                normalizedAxis[2] * normalizedAxis[2];
 
         if (lengthSquared > U{0}) {
             const U invLength = U{1} / std::sqrt(lengthSquared);
             normalizedAxis *= invLength;
         }
 
-        return Quaternion(
-            static_cast<T>(normalizedAxis[0] * s),
-            static_cast<T>(normalizedAxis[1] * s),
-            static_cast<T>(normalizedAxis[2] * s),
-            static_cast<T>(c)
-        );
+        return Quaternion(static_cast<T>(normalizedAxis[0] * s), static_cast<T>(normalizedAxis[1] * s),
+                          static_cast<T>(normalizedAxis[2] * s), static_cast<T>(c));
     }
 
     template <std::floating_point T>
@@ -150,14 +145,14 @@ namespace Nexus {
     template <std::floating_point T>
     template <std::floating_point U>
     constexpr Quaternion<T>& Quaternion<T>::operator*=(const Quaternion<U>& other) {
-        const T x = m_w * static_cast<T>(other.X()) + m_x * static_cast<T>(other.W()) + m_y * static_cast<T>(other.Z())
-            - m_z * static_cast<T>(other.Y());
-        const T y = m_w * static_cast<T>(other.Y()) - m_x * static_cast<T>(other.Z()) + m_y * static_cast<T>(other.W())
-            + m_z * static_cast<T>(other.X());
-        const T z = m_w * static_cast<T>(other.Z()) + m_x * static_cast<T>(other.Y()) - m_y * static_cast<T>(other.X())
-            + m_z * static_cast<T>(other.W());
-        const T w = m_w * static_cast<T>(other.W()) - m_x * static_cast<T>(other.X()) - m_y * static_cast<T>(other.Y())
-            - m_z * static_cast<T>(other.Z());
+        const T x = m_w * static_cast<T>(other.X()) + m_x * static_cast<T>(other.W()) +
+                    m_y * static_cast<T>(other.Z()) - m_z * static_cast<T>(other.Y());
+        const T y = m_w * static_cast<T>(other.Y()) - m_x * static_cast<T>(other.Z()) +
+                    m_y * static_cast<T>(other.W()) + m_z * static_cast<T>(other.X());
+        const T z = m_w * static_cast<T>(other.Z()) + m_x * static_cast<T>(other.Y()) -
+                    m_y * static_cast<T>(other.X()) + m_z * static_cast<T>(other.W());
+        const T w = m_w * static_cast<T>(other.W()) - m_x * static_cast<T>(other.X()) -
+                    m_y * static_cast<T>(other.Y()) - m_z * static_cast<T>(other.Z());
 
         m_x = x;
         m_y = y;
@@ -246,17 +241,10 @@ namespace Nexus {
     constexpr Vec3<T> Quaternion<T>::RotateVector(const Vec3<T>& v) const {
         const Vec3<T> q{m_x, m_y, m_z};
 
-        const Vec3<T> cross1{
-            q[1] * v[2] - q[2] * v[1],
-            q[2] * v[0] - q[0] * v[2],
-            q[0] * v[1] - q[1] * v[0]
-        };
+        const Vec3<T> cross1{q[1] * v[2] - q[2] * v[1], q[2] * v[0] - q[0] * v[2], q[0] * v[1] - q[1] * v[0]};
 
-        const Vec3<T> cross2{
-            q[1] * cross1[2] - q[2] * cross1[1],
-            q[2] * cross1[0] - q[0] * cross1[2],
-            q[0] * cross1[1] - q[1] * cross1[0]
-        };
+        const Vec3<T> cross2{q[1] * cross1[2] - q[2] * cross1[1], q[2] * cross1[0] - q[0] * cross1[2],
+                             q[0] * cross1[1] - q[1] * cross1[0]};
 
         return v + (cross1 * (T{2} * m_w)) + (cross2 * T{2});
     }
@@ -298,11 +286,8 @@ namespace Nexus {
         using R = std::common_type_t<T, U>;
 
         return QuaternionCommon<T, U>(
-            static_cast<R>(a.X()) + static_cast<R>(b.X()),
-            static_cast<R>(a.Y()) + static_cast<R>(b.Y()),
-            static_cast<R>(a.Z()) + static_cast<R>(b.Z()),
-            static_cast<R>(a.W()) + static_cast<R>(b.W())
-        );
+            static_cast<R>(a.X()) + static_cast<R>(b.X()), static_cast<R>(a.Y()) + static_cast<R>(b.Y()),
+            static_cast<R>(a.Z()) + static_cast<R>(b.Z()), static_cast<R>(a.W()) + static_cast<R>(b.W()));
     }
 
     template <std::floating_point T, std::floating_point U>
@@ -310,24 +295,19 @@ namespace Nexus {
         using R = std::common_type_t<T, U>;
 
         return QuaternionCommon<T, U>(
-            static_cast<R>(a.X()) - static_cast<R>(b.X()),
-            static_cast<R>(a.Y()) - static_cast<R>(b.Y()),
-            static_cast<R>(a.Z()) - static_cast<R>(b.Z()),
-            static_cast<R>(a.W()) - static_cast<R>(b.W())
-        );
+            static_cast<R>(a.X()) - static_cast<R>(b.X()), static_cast<R>(a.Y()) - static_cast<R>(b.Y()),
+            static_cast<R>(a.Z()) - static_cast<R>(b.Z()), static_cast<R>(a.W()) - static_cast<R>(b.W()));
     }
 
     template <std::floating_point T, std::floating_point U>
     constexpr auto operator*(const Quaternion<T>& a, const Quaternion<U>& b) -> QuaternionCommon<T, U> {
         using R = std::common_type_t<T, U>;
 
-        QuaternionCommon<T, U> result(
-            static_cast<R>(a.X()), static_cast<R>(a.Y()), static_cast<R>(a.Z()), static_cast<R>(a.W())
-        );
+        QuaternionCommon<T, U> result(static_cast<R>(a.X()), static_cast<R>(a.Y()), static_cast<R>(a.Z()),
+                                      static_cast<R>(a.W()));
 
-        result *= QuaternionCommon<T, U>(
-            static_cast<R>(b.X()), static_cast<R>(b.Y()), static_cast<R>(b.Z()), static_cast<R>(b.W())
-        );
+        result *= QuaternionCommon<T, U>(static_cast<R>(b.X()), static_cast<R>(b.Y()), static_cast<R>(b.Z()),
+                                         static_cast<R>(b.W()));
 
         return result;
     }
@@ -337,11 +317,8 @@ namespace Nexus {
         using R = std::common_type_t<T, U>;
 
         return QuaternionCommon<T, U>(
-            static_cast<R>(q.X()) * static_cast<R>(scalar),
-            static_cast<R>(q.Y()) * static_cast<R>(scalar),
-            static_cast<R>(q.Z()) * static_cast<R>(scalar),
-            static_cast<R>(q.W()) * static_cast<R>(scalar)
-        );
+            static_cast<R>(q.X()) * static_cast<R>(scalar), static_cast<R>(q.Y()) * static_cast<R>(scalar),
+            static_cast<R>(q.Z()) * static_cast<R>(scalar), static_cast<R>(q.W()) * static_cast<R>(scalar));
     }
 
     template <std::floating_point T, std::floating_point U>
@@ -354,18 +331,16 @@ namespace Nexus {
         using R = std::common_type_t<T, U>;
 
         return QuaternionCommon<T, U>(
-            static_cast<R>(q.X()) / static_cast<R>(scalar),
-            static_cast<R>(q.Y()) / static_cast<R>(scalar),
-            static_cast<R>(q.Z()) / static_cast<R>(scalar),
-            static_cast<R>(q.W()) / static_cast<R>(scalar)
-        );
+            static_cast<R>(q.X()) / static_cast<R>(scalar), static_cast<R>(q.Y()) / static_cast<R>(scalar),
+            static_cast<R>(q.Z()) / static_cast<R>(scalar), static_cast<R>(q.W()) / static_cast<R>(scalar));
     }
 
     template <std::floating_point T, std::floating_point U>
     constexpr auto operator*(const Quaternion<T>& q, const Vec3<U>& v) -> Vec3<std::common_type_t<T, U>> {
         using R = std::common_type_t<T, U>;
 
-        const Quaternion<R> qr(static_cast<R>(q.X()), static_cast<R>(q.Y()), static_cast<R>(q.Z()), static_cast<R>(q.W()));
+        const Quaternion<R> qr(static_cast<R>(q.X()), static_cast<R>(q.Y()), static_cast<R>(q.Z()),
+                               static_cast<R>(q.W()));
         const Vec3<R> vr{static_cast<R>(v[0]), static_cast<R>(v[1]), static_cast<R>(v[2])};
 
         return qr.RotateVector(vr);

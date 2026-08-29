@@ -104,7 +104,8 @@ TEST(QuaternionTest, FromEulerMatchesAxisAngleForSingleAxis) {
     constexpr float32 angle = kPi / 3.0f;
 
     const Quaternion<float32> fromEuler = Quaternion<float32>::FromEuler(angle, 0.0f, 0.0f);
-    const Quaternion<float32> fromAxisAngle = Quaternion<float32>::FromAxisAngle(Vec3<float32>{1.0f, 0.0f, 0.0f}, angle);
+    const Quaternion<float32> fromAxisAngle =
+        Quaternion<float32>::FromAxisAngle(Vec3<float32>{1.0f, 0.0f, 0.0f}, angle);
 
     ExpectNear(fromEuler, fromAxisAngle);
 }
@@ -317,7 +318,8 @@ TEST(QuaternionTest, MultiplicationIsNonCommutative) {
 
 TEST(QuaternionTest, MultiplicationCombinesRotations) {
     // Two 90 degree rotations around Z should equal one 180 degree rotation around Z.
-    const Quaternion<float32> quarterTurn = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 0.0f, 1.0f}, kPi / 2.0f);
+    const Quaternion<float32> quarterTurn =
+        Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 0.0f, 1.0f}, kPi / 2.0f);
     const Quaternion<float32> halfTurn = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 0.0f, 1.0f}, kPi);
 
     const Quaternion<float32> combined = quarterTurn * quarterTurn;
@@ -746,7 +748,8 @@ TEST(QuaternionTest, SlerpAtEnd) {
 TEST(QuaternionTest, SlerpAtMidpointMatchesHalfAngle) {
     const Quaternion<float32> a = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 1.0f, 0.0f}, 0.0f);
     const Quaternion<float32> b = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 1.0f, 0.0f}, kPi / 2.0f);
-    const Quaternion<float32> expected = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 1.0f, 0.0f}, kPi / 4.0f);
+    const Quaternion<float32> expected =
+        Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 1.0f, 0.0f}, kPi / 4.0f);
 
     const Quaternion<float32> result = Slerp(a, b, 0.5f);
 
@@ -768,7 +771,8 @@ TEST(QuaternionTest, SlerpTakesShortestPath) {
     b = -b; // Negate to represent the same rotation via the opposite hemisphere.
 
     const Quaternion<float32> result = Slerp(a, b, 0.5f);
-    const Quaternion<float32> expected = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 0.0f, 1.0f}, kPi / 4.0f);
+    const Quaternion<float32> expected =
+        Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 0.0f, 1.0f}, kPi / 4.0f);
 
     ExpectNear(result, expected);
 }
