@@ -13,111 +13,111 @@ namespace Nexus {
     void Logger::InstallCrashHandler() {
         std::set_terminate(&Logger::HandleTerminate);
 
-#ifdef SIGABRT
+#if defined(SIGABRT)
         std::signal(SIGABRT, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGFPE
+#if defined(SIGFPE)
         std::signal(SIGFPE, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGILL
+#if defined(SIGILL)
         std::signal(SIGILL, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGINT
+#if defined(SIGINT)
         std::signal(SIGINT, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGSEGV
+#if defined(SIGSEGV)
         std::signal(SIGSEGV, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGTERM
+#if defined(SIGTERM)
         std::signal(SIGTERM, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGBREAK
+#if defined(SIGBREAK)
         std::signal(SIGBREAK, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGHUP
+#if defined(SIGHUP)
         std::signal(SIGHUP, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGQUIT
+#if defined(SIGQUIT)
         std::signal(SIGQUIT, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGTRAP
+#if defined(SIGTRAP)
         std::signal(SIGTRAP, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGBUS
+#if defined(SIGBUS)
         std::signal(SIGBUS, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGSYS
+#if defined(SIGSYS)
         std::signal(SIGSYS, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGPIPE
+#if defined(SIGPIPE)
         std::signal(SIGPIPE, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGALRM
+#if defined(SIGALRM)
         std::signal(SIGALRM, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGUSR1
+#if defined(SIGUSR1)
         std::signal(SIGUSR1, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGUSR2
+#if defined(SIGUSR2)
         std::signal(SIGUSR2, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGCHLD
+#if defined(SIGCHLD)
         std::signal(SIGCHLD, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGCONT
+#if defined(SIGCONT)
         std::signal(SIGCONT, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGSTOP
+#if defined(SIGSTOP)
         std::signal(SIGSTOP, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGTSTP
+#if defined(SIGTSTP)
         std::signal(SIGTSTP, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGTTIN
+#if defined(SIGTTIN)
         std::signal(SIGTTIN, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGTTOU
+#if defined(SIGTTOU)
         std::signal(SIGTTOU, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGURG
+#if defined(SIGURG)
         std::signal(SIGURG, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGVTALRM
+#if defined(SIGVTALRM)
         std::signal(SIGVTALRM, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGPROF
+#if defined(SIGPROF)
         std::signal(SIGPROF, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGXCPU
+#if defined(SIGXCPU)
         std::signal(SIGXCPU, &Logger::HandleSignal);
 #endif
 
-#ifdef SIGXFSZ
+#if defined(SIGXFSZ)
         std::signal(SIGXFSZ, &Logger::HandleSignal);
 #endif
     }
@@ -126,189 +126,189 @@ namespace Nexus {
         std::string signalStr = "UNKNOWN";
         std::string reason = "Unhandled signal";
 
-#ifdef SIGABRT
+#if defined(SIGABRT)
         if (signal == SIGABRT) {
             signalStr = "SIGABRT";
             reason += " (" + signalStr + ") Process was aborted";
         }
 #endif
 
-#ifdef SIGFPE
+#if defined(SIGFPE)
         if (signal == SIGFPE) {
             signalStr = "SIGFPE";
             reason += " (" + signalStr + ") Erroneous arithmetic operation";
         }
 #endif
 
-#ifdef SIGILL
+#if defined(SIGILL)
         if (signal == SIGILL) {
             signalStr = "SIGILL";
             reason += " (" + signalStr + ") Illegal instruction encountered";
         }
 #endif
 
-#ifdef SIGINT
+#if defined(SIGINT)
         if (signal == SIGINT) {
             signalStr = "SIGINT";
             reason += " (" + signalStr + ") Interrupt requested by the user";
         }
 #endif
 
-#ifdef SIGSEGV
+#if defined(SIGSEGV)
         if (signal == SIGSEGV) {
             signalStr = "SIGSEGV";
             reason += " (" + signalStr + ") Invalid memory access";
         }
 #endif
 
-#ifdef SIGTERM
+#if defined(SIGTERM)
         if (signal == SIGTERM) {
             signalStr = "SIGTERM";
             reason += " (" + signalStr + ") Termination requested";
         }
 #endif
 
-#ifdef SIGBREAK
+#if defined(SIGBREAK)
         if (signal == SIGBREAK) {
             signalStr = "SIGBREAK";
             reason += " (" + signalStr + ") Console break signal received";
         }
 #endif
 
-#ifdef SIGHUP
+#if defined(SIGHUP)
         if (signal == SIGHUP) {
             signalStr = "SIGHUP";
             reason += " (" + signalStr + ") Controlling terminal disconnected";
         }
 #endif
 
-#ifdef SIGQUIT
+#if defined(SIGQUIT)
         if (signal == SIGQUIT) {
             signalStr = "SIGQUIT";
             reason += " (" + signalStr + ") Quit requested";
         }
 #endif
 
-#ifdef SIGTRAP
+#if defined(SIGTRAP)
         if (signal == SIGTRAP) {
             signalStr = "SIGTRAP";
             reason += " (" + signalStr + ") Trace or breakpoint trap";
         }
 #endif
 
-#ifdef SIGBUS
+#if defined(SIGBUS)
         if (signal == SIGBUS) {
             signalStr = "SIGBUS";
             reason += " (" + signalStr + ") Bus error or invalid memory access";
         }
 #endif
 
-#ifdef SIGSYS
+#if defined(SIGSYS)
         if (signal == SIGSYS) {
             signalStr = "SIGSYS";
             reason += " (" + signalStr + ") Invalid system call";
         }
 #endif
 
-#ifdef SIGPIPE
+#if defined(SIGPIPE)
         if (signal == SIGPIPE) {
             signalStr = "SIGPIPE";
             reason += " (" + signalStr + ") Broken pipe or closed connection";
         }
 #endif
 
-#ifdef SIGALRM
+#if defined(SIGALRM)
         if (signal == SIGALRM) {
             signalStr = "SIGALRM";
             reason += " (" + signalStr + ") Timer expired";
         }
 #endif
 
-#ifdef SIGUSR1
+#if defined(SIGUSR1)
         if (signal == SIGUSR1) {
             signalStr = "SIGUSR1";
             reason += " (" + signalStr + ") User-defined signal 1";
         }
 #endif
 
-#ifdef SIGUSR2
+#if defined(SIGUSR2)
         if (signal == SIGUSR2) {
             signalStr = "SIGUSR2";
             reason += " (" + signalStr + ") User-defined signal 2";
         }
 #endif
 
-#ifdef SIGCHLD
+#if defined(SIGCHLD)
         if (signal == SIGCHLD) {
             signalStr = "SIGCHLD";
             reason += " (" + signalStr + ") Child process state changed";
         }
 #endif
 
-#ifdef SIGCONT
+#if defined(SIGCONT)
         if (signal == SIGCONT) {
             signalStr = "SIGCONT";
             reason += " (" + signalStr + ") Process continued";
         }
 #endif
 
-#ifdef SIGSTOP
+#if defined(SIGSTOP)
         if (signal == SIGSTOP) {
             signalStr = "SIGSTOP";
             reason += " (" + signalStr + ") Process stop requested";
         }
 #endif
 
-#ifdef SIGTSTP
+#if defined(SIGTSTP)
         if (signal == SIGTSTP) {
             signalStr = "SIGTSTP";
             reason += " (" + signalStr + ") Terminal stop requested";
         }
 #endif
 
-#ifdef SIGTTIN
+#if defined(SIGTTIN)
         if (signal == SIGTTIN) {
             signalStr = "SIGTTIN";
             reason += " (" + signalStr + ") Background process attempted terminal input";
         }
 #endif
 
-#ifdef SIGTTOU
+#if defined(SIGTTOU)
         if (signal == SIGTTOU) {
             signalStr = "SIGTTOU";
             reason += " (" + signalStr + ") Background process attempted terminal output";
         }
 #endif
 
-#ifdef SIGURG
+#if defined(SIGURG)
         if (signal == SIGURG) {
             signalStr = "SIGURG";
             reason += " (" + signalStr + ") Urgent socket data available";
         }
 #endif
 
-#ifdef SIGVTALRM
+#if defined(SIGVTALRM)
         if (signal == SIGVTALRM) {
             signalStr = "SIGVTALRM";
             reason += " (" + signalStr + ") Virtual timer expired";
         }
 #endif
 
-#ifdef SIGPROF
+#if defined(SIGPROF)
         if (signal == SIGPROF) {
             signalStr = "SIGPROF";
             reason += " (" + signalStr + ") Profiling timer expired";
         }
 #endif
 
-#ifdef SIGXCPU
+#if defined(SIGXCPU)
         if (signal == SIGXCPU) {
             signalStr = "SIGXCPU";
             reason += " (" + signalStr + ") CPU time limit exceeded";
         }
 #endif
 
-#ifdef SIGXFSZ
+#if defined(SIGXFSZ)
         if (signal == SIGXFSZ) {
             signalStr = "SIGXFSZ";
             reason += " (" + signalStr + ") File size limit exceeded";
@@ -413,7 +413,7 @@ namespace Nexus {
 
         std::tm localTime{};
 
-#ifdef _WIN32
+#if defined(_WIN32)
         localtime_s(&localTime, &time);
 #else
         localtime_r(&time, &localTime);
