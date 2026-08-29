@@ -14,4 +14,5 @@ export import NE.Engine.Core.Window;
 
 // Math
 export import NE.Engine.Math.Mat;
+export import NE.Engine.Math.Quaternion;
 export import NE.Engine.Math.Vec;
