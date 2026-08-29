@@ -84,7 +84,7 @@ export namespace Nexus::Config {
 #endif
 
     // --- C++ version ---
-#if defined(_MSVC_LANG)
+#if defined(_MSVC_LANG) && _MSVC_LANG > __cplusplus
 #    define CPP_STD _MSVC_LANG
 #else
 #    define CPP_STD __cplusplus
