@@ -13,5 +13,4 @@ export import NE.Engine.Core.Types;
 export import NE.Engine.Core.Window;
 
 // Math
-export import NE.Engine.Math.Vec2;
-export import NE.Engine.Math.Vec3;
+export import NE.Engine.Math.Vec;
