@@ -7,10 +7,12 @@ module;
 
 export module NE.Engine.Core.Window;
 
+import std;
+
 export namespace Nexus {
     class NEXUS_API Window {
     public:
-        Window(const char* title);
+        Window(const std::string_view& title);
         ~Window();
 
         Window(const Window&) = delete;
@@ -18,14 +20,14 @@ export namespace Nexus {
 
         bool ShouldClose() const;
         void DrawFrame();
-        void PollEvents();
+        void PollEvents() const;
 
         int GetWidth() const;
         int GetHeight() const;
 
     private:
-        void CreateWindow(const char* title);
-        void CenterWindow();
+        void CreateWindow(const std::string_view& title);
+        void CenterWindow() const;
         void SetIcon() const;
 
     private:

@@ -9,10 +9,10 @@ namespace Nexus {
     void Application::run() {
         Logger logger;
         logger.LogInfo(std::format("Hello {}", Config::engineName));
-        Window window("Nexus Engine");
+        Window window(std::format("{} v{}", Config::engineName, Config::engineVersion));
         while (!window.ShouldClose()) {
-            window.DrawFrame();
             window.PollEvents();
+            window.DrawFrame();
         }
     }
 

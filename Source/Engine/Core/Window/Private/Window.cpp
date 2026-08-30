@@ -10,7 +10,7 @@ module NE.Engine.Core.Window;
 import std;
 
 namespace Nexus {
-    Window::Window(const char* title) {
+    Window::Window(const std::string_view& title) {
         if (!glfwInit())
             return;
 
@@ -40,7 +40,7 @@ namespace Nexus {
 
     void Window::DrawFrame() {}
 
-    void Window::PollEvents() {
+    void Window::PollEvents() const {
         glfwPollEvents();
     }
 
@@ -52,16 +52,16 @@ namespace Nexus {
         return m_height;
     }
 
-    void Window::CreateWindow(const char* title) {
+    void Window::CreateWindow(const std::string_view& title) {
         GLFWmonitor* monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
         m_width = mode->width / 2;
         m_height = mode->height / 2;
 
-        m_window = glfwCreateWindow(m_width, m_height, title, nullptr, nullptr);
+        m_window = glfwCreateWindow(m_width, m_height, title.data(), nullptr, nullptr);
     }
 
-    void Window::CenterWindow() {
+    void Window::CenterWindow() const {
         GLFWmonitor* monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
         const int xpos = mode->width / 2 - m_width / 2;
