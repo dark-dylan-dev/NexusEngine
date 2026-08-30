@@ -78,4 +78,3 @@
 ## Window management
 
 * GLFW
-* SDL
