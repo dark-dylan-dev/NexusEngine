@@ -37,3 +37,11 @@ if(WIN32 AND MSVC AND CMAKE_BUILD_TYPE MATCHES "^(Debug|RelWithDebInfo)$")
             "$<TARGET_FILE_DIR:NexusEngine>/NexusEngine.ilk"
     )
 endif()
+
+add_custom_target(CopyAssets
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        "${CMAKE_SOURCE_DIR}/Assets/Copy"
+        "$<TARGET_FILE_DIR:NexusEngine>/Assets"
+    COMMENT "Copying assets"
+)
+add_dependencies(NexusEngine CopyAssets)
