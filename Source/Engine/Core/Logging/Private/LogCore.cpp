@@ -2,6 +2,8 @@
 
 module;
 
+#include "Utils.hpp"
+
 #include <ctime>
 
 module NE.Engine.Core.Log;
@@ -16,6 +18,7 @@ namespace Nexus {
     Logger::Logger(const std::filesystem::path& path, bool enableConsole) {
         InstallCrashHandler();
         Init(path.generic_string(), enableConsole);
+        m_HasColors = EnableAnsiColors();
         LogInfo("Logging system initialized");
     }
 
@@ -37,9 +40,9 @@ namespace Nexus {
 
             while (m_Running.load(std::memory_order_acquire)) {
                 if (m_Buffer->Pop(entry)) {
-                    m_File->write(entry.Formatted.data(), static_cast<isize>(entry.Formatted.size()));
+                    WriteToFile(entry);
                     if (m_EnableConsole)
-                        std::print("{}", entry.Formatted);
+                        WriteToConsole(entry);
 
                     emptySpins = 0;
                 } else {
@@ -56,9 +59,9 @@ namespace Nexus {
 
                 if (m_FlushRequested.load(std::memory_order_acquire)) {
                     while (m_Buffer->Pop(entry)) {
-                        m_File->write(entry.Formatted.data(), static_cast<isize>(entry.Formatted.size()));
+                        WriteToFile(entry);
                         if (m_EnableConsole)
-                            std::print("{}", entry.Formatted);
+                            WriteToConsole(entry);
                     }
 
                     m_File->flush();
@@ -76,7 +79,7 @@ namespace Nexus {
 
     // Log
     void Logger::Log(LogLevel level, std::string_view message) {
-        while (!m_Buffer->Push({.Formatted = Format(level, message)})) {
+        while (!m_Buffer->Push({.Formatted = Format(level, message), .Level = level})) {
             std::this_thread::yield();
         }
     }
@@ -190,6 +193,19 @@ namespace Nexus {
     }
 
     void Logger::WriteToConsole(LogEntry& entry) {
+        static constexpr std::string_view reset = "\x1B[0m";
+        static const std::unordered_map<LogLevel, std::string> colors{
+            {LogLevel::Trace, ANSI(37)},       // White
+            {LogLevel::Debug, ANSI(34)},       // Blue
+            {LogLevel::Info, ANSI(32)},        // Green
+            {LogLevel::Warn, ANSI(33)},        // Yellow
+            {LogLevel::Error, ANSI(31)},       // Red
+            {LogLevel::Fatal, ANSI(91, true)}, // Bold bright red
+        };
+        if (m_HasColors)
+            std::print("{}", colors.at(entry.Level));
         std::print("{}", entry.Formatted);
+        if (m_HasColors)
+            std::print(reset);
     }
 } // namespace Nexus

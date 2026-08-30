@@ -16,6 +16,7 @@ export namespace Nexus {
 
     struct NEXUS_API LogEntry {
         std::string Formatted;
+        LogLevel Level;
     };
 
     class NEXUS_API Logger {
@@ -60,6 +61,7 @@ export namespace Nexus {
 
         std::unique_ptr<std::ofstream> m_File = nullptr;
         bool m_EnableConsole{true};
+        bool m_HasColors{false};
 
         std::atomic<bool> m_Running{false};
         std::jthread m_BackgroundThread;
