@@ -5,7 +5,6 @@
 #if defined(_WIN32)
 #    include <windows.h>
 #else
-#    include <cstdio>
 #    include <cstdlib>
 #    include <unistd.h>
 #endif
