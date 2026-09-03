@@ -166,6 +166,7 @@ jobs:
           path: Docs/Generated_HTML
 
   deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     needs: docs
     environment:
       name: github-pages
