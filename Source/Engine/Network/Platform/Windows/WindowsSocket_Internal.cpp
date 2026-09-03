@@ -11,6 +11,7 @@
 #endif
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <mstcpip.h>
 
 #include <cstring>
 // clang-format on
@@ -36,6 +37,16 @@ namespace Nexus::Network::Internal {
             result.ok = value != SOCKET_ERROR;
             result.platformErrno = result.ok ? 0 : WSAGetLastError();
             return result;
+        }
+
+        void DisableLoopbackSynRetransmission(SOCKET socketHandle) {
+            TCP_INITIAL_RTO_PARAMETERS rto{};
+            rto.Rtt = TCP_INITIAL_RTO_DEFAULT_RTT;
+            rto.MaxSynRetransmissions = TCP_INITIAL_RTO_NO_SYN_RETRANSMISSIONS;
+
+            DWORD bytesReturned = 0;
+            WSAIoctl(socketHandle, SIO_TCP_INITIAL_RTO, &rto, sizeof(rto), nullptr, 0, &bytesReturned, nullptr,
+                     nullptr);
         }
     } // namespace
 
@@ -156,9 +167,12 @@ namespace Nexus::Network::Internal {
         return true;
     }
 
-    RawResult RawConnect(RawHandle handle, const RawAddress& address) {
+    RawResult RawConnect(RawHandle handle, const RawAddress& address, bool isTCPLocal) {
         sockaddr_in sa{};
         ToSockAddr(address, sa);
+
+        if (isTCPLocal)
+            DisableLoopbackSynRetransmission(static_cast<SOCKET>(handle));
 
         const int result = ::connect(static_cast<SOCKET>(handle), reinterpret_cast<const sockaddr*>(&sa), sizeof(sa));
         return MakeResult(result == 0 ? 0 : SOCKET_ERROR);

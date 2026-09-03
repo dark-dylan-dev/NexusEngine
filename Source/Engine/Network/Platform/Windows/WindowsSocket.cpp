@@ -169,7 +169,8 @@ namespace Nexus::Network {
             return false;
         }
 
-        const RawResult result = RawConnect(m_handle, raw);
+        const bool isLocalTCP = address.IsLocal() && m_type == SocketType::TCP;
+        const RawResult result = RawConnect(m_handle, raw, isLocalTCP);
 
         if (result.ok) {
             ClearError(outError);

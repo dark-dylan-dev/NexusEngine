@@ -58,7 +58,7 @@ namespace Nexus::Network::Internal {
     [[nodiscard]] RawHandle RawAccept(RawHandle handle);
 
     [[nodiscard]] bool RawParseIPv4(const char* host, unsigned short port, RawAddress& out);
-    [[nodiscard]] RawResult RawConnect(RawHandle handle, const RawAddress& address);
+    [[nodiscard]] RawResult RawConnect(RawHandle handle, const RawAddress& address, bool isTCPLocal);
     [[nodiscard]] RawResult RawCompleteConnect(RawHandle handle);
 
     [[nodiscard]] RawResult RawSend(RawHandle handle, const void* data, unsigned long size);

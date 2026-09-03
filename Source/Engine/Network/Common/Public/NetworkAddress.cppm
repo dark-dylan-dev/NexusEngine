@@ -21,6 +21,8 @@ export namespace Nexus::Network {
 
         [[nodiscard]] uint16 Port() const noexcept;
 
+        [[nodiscard]] bool IsLocal() const noexcept;
+
         [[nodiscard]] bool operator==(const NetworkAddress& other) const noexcept;
 
     private:
