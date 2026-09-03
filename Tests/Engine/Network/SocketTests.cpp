@@ -285,12 +285,14 @@ namespace {
 
         std::optional<Socket> server;
         const bool connected = WaitUntil([&] {
+            bool nonBlocking = false;
             if (!server) {
                 server = listener.Accept();
+                nonBlocking = server->SetNonBlocking(true);
             }
             std::optional<NetworkError> completeError;
             const bool clientReady = client.CompleteConnect(completeError);
-            return server.has_value() && clientReady;
+            return server.has_value() && clientReady && nonBlocking;
         });
 
         if (!connected || !server) {

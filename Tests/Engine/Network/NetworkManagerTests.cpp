@@ -53,13 +53,14 @@ namespace {
 
         bool WaitForAccept() {
             return WaitUntil([&] {
+                bool nonBlocking = false;
                 if (!accepted) {
                     accepted = listener.Accept();
                     if (accepted) {
-                        static_cast<void>(accepted->SetNonBlocking(true));
+                        nonBlocking = accepted->SetNonBlocking(true);
                     }
                 }
-                return accepted.has_value();
+                return accepted.has_value() && nonBlocking;
             });
         }
     };

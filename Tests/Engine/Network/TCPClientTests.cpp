@@ -54,6 +54,7 @@ namespace {
                 accepted = listener.Accept();
                 return accepted.has_value();
             });
+            const bool nonBlocking = accepted->SetNonBlocking(true);
             return accepted;
         }
     };
