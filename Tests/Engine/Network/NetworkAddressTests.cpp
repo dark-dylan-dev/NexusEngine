@@ -76,3 +76,12 @@ TEST(NetworkAddressTest, PortAtMaxUint16) {
     const NetworkAddress address("host", 65535);
     EXPECT_EQ(address.Port(), 65535);
 }
+
+TEST(NetworkAddressTest, IsLocalWorks) {
+    const NetworkAddress localhost("localhost", 27017);
+    const NetworkAddress ipv4local("127.0.0.1", 27018);
+    const NetworkAddress ipv4("128.0.0.1", 27019);
+    EXPECT_TRUE(localhost.IsLocal());
+    EXPECT_TRUE(ipv4local.IsLocal());
+    EXPECT_FALSE(ipv4.IsLocal());
+}
