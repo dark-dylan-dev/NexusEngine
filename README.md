@@ -1,5 +1,11 @@
 # Nexus Engine
 
+[![CI](https://github.com/dark-dylan-dev/NexusEngine/actions/workflows/ci.yml/badge.svg)](https://github.com/dark-dylan-dev/NexusEngine/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/dark-dylan-dev/NexusEngine)](https://github.com/dark-dylan-dev/NexusEngine/blob/main/LICENSE)
+[![C++](https://img.shields.io/badge/C%2B%2B-23-blue)](https://en.cppreference.com/w/cpp/23)
+[![CMake](https://img.shields.io/badge/CMake-%3E%3D%203.30-064F8C)](https://cmake.org/)
+[![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-r)](https://github.com/dark-dylan-dev/NexusEngine)
+
 > A playground for everything I learn about game development and graphics programming.
 
 Nexus Engine is a long-term learning project with usability as its eventual goal. 
