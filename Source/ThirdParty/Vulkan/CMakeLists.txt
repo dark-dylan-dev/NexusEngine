@@ -29,7 +29,9 @@ set(VULKAN_HEADERS_ENABLE_MODULE ON)
 # set up Vulkan-Headers
 add_library(Vulkan-Headers INTERFACE)
 add_library(Vulkan::Headers ALIAS Vulkan-Headers)
-target_compile_definitions(Vulkan-Headers INTERFACE VK_NO_PROTOTYPES=1)
+target_compile_definitions(Vulkan-Headers INTERFACE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
+target_compile_definitions(Vulkan-Headers INTERFACE VULKAN_HPP_STORAGE_SHARED)
+target_compile_definitions(Vulkan-Headers INTERFACE VULKAN_HPP_STORAGE_SHARED_EXPORT)
 target_compile_definitions(Vulkan-Headers INTERFACE VULKAN_HPP_CXX_MODULE_EXPERIMENTAL_WARNING)
 target_include_directories(Vulkan-Headers INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 

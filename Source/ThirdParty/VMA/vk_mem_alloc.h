@@ -3241,12 +3241,10 @@ void* vma_aligned_alloc(size_t alignment, size_t size)
 }
 } // namespace
 #elif defined(_WIN32)
-namespace {
-void* vma_aligned_alloc(size_t alignment, size_t size)
+inline void* vma_aligned_alloc(size_t alignment, size_t size)
 {
     return _aligned_malloc(size, alignment);
 }
-} // namespace
 #elif __cplusplus >= 201703L || _MSVC_LANG >= 201703L // C++17
 namespace {
 void* vma_aligned_alloc(size_t alignment, size_t size)
@@ -3265,10 +3263,8 @@ void* vma_aligned_alloc(size_t alignment, size_t size)
 } // namespace
 #endif
 
-namespace
-{
 #if defined(_WIN32)
-void vma_aligned_free(void* ptr)
+inline void vma_aligned_free(void* ptr)
 {
     _aligned_free(ptr);
 }
@@ -3278,7 +3274,6 @@ void vma_aligned_free(void* VMA_NULLABLE ptr)
     free(ptr);
 }
 #endif
-} // namespace
 
 #ifndef VMA_ALIGN_OF
    #define VMA_ALIGN_OF(type)       (alignof(type))
