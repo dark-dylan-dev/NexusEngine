@@ -7,6 +7,7 @@ target_include_directories(VulkanMemoryAllocator INTERFACE "$<BUILD_INTERFACE:${
 # VMA Configuration Flags
 target_compile_definitions(VulkanMemoryAllocator INTERFACE VMA_STATIC_VULKAN_FUNCTIONS=0)
 target_compile_definitions(VulkanMemoryAllocator INTERFACE VMA_DYNAMIC_VULKAN_FUNCTIONS=1)
+target_sources(VulkanMemoryAllocator INTERFACE VMA.cpp)
 
 add_library(VulkanMemoryAllocator-Hpp INTERFACE)
 target_compile_options(VulkanMemoryAllocator-Hpp INTERFACE

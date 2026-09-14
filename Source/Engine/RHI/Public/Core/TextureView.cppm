@@ -22,7 +22,7 @@ export namespace Nexus::RHI {
 
     struct TextureViewDesc {
         std::string Name;
-        Texture* Texture;
+        RHI::Texture* Texture;
         TextureViewType Type = TextureViewType::SHADER_READ;
         TextureViewDimension Dimension = TextureViewDimension::TEXTURE_2D;
         TextureFormat Format = TextureFormat::UNDEFINED;

@@ -5,7 +5,6 @@ module;
 #define VULKAN_HPP_CXX_MODULE
 #include <vulkan/vulkan_hpp_macros.hpp>
 
-#define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
 
 export module vk_mem_alloc;
