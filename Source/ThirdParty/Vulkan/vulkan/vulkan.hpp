@@ -8717,9 +8717,21 @@ VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE
     }
   };
 
+// TODO: Remove those workarounds when toolchains fix the underlying issues
+// GCC workaround https://github.com/mingw-w64/mingw-w64/issues/166
+//     reason: static variables inside exported inline functions aren't handled properly
+//     see: https://github.com/msys2/MINGW-packages/issues/25869#issuecomment-4358625035
+// clang workaround (fixed in version 23.1.0)
+//     reason: inline variables inside modules aren't handled properly
+//     see: https://github.com/llvm/llvm-project/issues/170099
+#if !defined(__clang__)
+  inline ErrorCategoryImpl instance;
+#endif
   VULKAN_HPP_INLINE std::error_category const & errorCategory() VULKAN_HPP_NOEXCEPT
   {
+#if defined(__clang__)
     static ErrorCategoryImpl instance;
+#endif
     return instance;
   }
 
