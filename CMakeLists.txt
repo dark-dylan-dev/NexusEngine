@@ -22,6 +22,9 @@ endif()
 
 project(NexusEngine VERSION 0.0.1 LANGUAGES CXX)
 
+option(NEXUS_RHI_VULKAN "Build Vulkan backend" ON)
+option(NEXUS_RHI_DX12 "Build DirectX12 backend" OFF)
+
 add_subdirectory(Source)
 
 option(NEXUS_BUILD_TEST "Enable Nexus Engine tests" OFF)
