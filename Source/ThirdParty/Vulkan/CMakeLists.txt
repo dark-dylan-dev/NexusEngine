@@ -47,5 +47,10 @@ target_sources(Vulkan-HppModule PUBLIC
 
 target_link_libraries(Vulkan-HppModule PUBLIC Vulkan::Headers)
 
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    target_compile_options(NexusEngine PRIVATE -Wno-attributes)
+    target_compile_options(Vulkan-HppModule PRIVATE -Wno-attributes)
+endif()
+
 target_include_directories(NexusEngine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 message(STATUS "Vulkan: Version ${VK_VERSION_STRING}")
