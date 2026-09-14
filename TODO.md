@@ -20,9 +20,6 @@
 
 ## Math
 
-* Vectors
-* Matrices
-* Quaternions
 * Transforms
 * Geometric primitives
 
