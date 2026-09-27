@@ -33,7 +33,7 @@ export namespace Nexus::RHI {
         VulkanSurface& operator=(VulkanSurface&&) = default;
 
         RenderContext* BeginFrame() override;
-        void ClearScreen(float r, float g, float b) override;
+        void ClearScreen(float32 r, float32 g, float32 b) override;
         void EndFrame() override;
 
         void Resize(int32 w, int32 h) override;

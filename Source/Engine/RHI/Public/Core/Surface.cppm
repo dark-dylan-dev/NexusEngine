@@ -19,7 +19,7 @@ export namespace Nexus::RHI {
         virtual ~Surface() = default;
 
         virtual RenderContext* BeginFrame() = 0;
-        virtual void ClearScreen(float r, float g, float b) = 0;
+        virtual void ClearScreen(float32 r, float32 g, float32 b) = 0;
         virtual void EndFrame() = 0;
 
         virtual void Resize(int32 w, int32 h) = 0;

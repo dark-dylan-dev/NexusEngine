@@ -6,14 +6,16 @@ module;
 
 export module NE.Engine.Core.Utils;
 
+import NE.Engine.Core.Types;
+
 import std;
 
 export namespace Nexus {
     /// Gets the time in seconds since the start of the program
-    NEXUS_API double GetEngineTime() {
+    NEXUS_API float64 GetEngineTime() {
         const static auto start = std::chrono::steady_clock::now();
         const auto now = std::chrono::steady_clock::now();
-        return std::chrono::duration<double>(now - start).count();
+        return std::chrono::duration<float64>(now - start).count();
     }
 
     template <typename F>

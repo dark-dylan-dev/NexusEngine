@@ -190,7 +190,7 @@ namespace Nexus::RHI {
         return m_Contexts[m_CurrentFrame].get();
     }
 
-    void VulkanSurface::ClearScreen(float r, float g, float b) {
+    void VulkanSurface::ClearScreen(float32 r, float32 g, float32 b) {
         vk::CommandBuffer commandBuffer =
             static_cast<VulkanRenderContext*>(m_Contexts[m_CurrentFrame].get())->GetCommandBuffer();
 
