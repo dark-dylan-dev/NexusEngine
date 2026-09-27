@@ -4,10 +4,23 @@
 
 import NE.Engine.Core.Types;
 import NE.Engine.Math.Mat;
+import NE.Engine.Math.Vec;
+import NE.Engine.Math.Quaternion;
 
 import std;
 
 using namespace Nexus;
+
+namespace {
+    constexpr float32 kPi = std::numbers::pi_v<float32>;
+
+    template <std::floating_point T>
+    void ExpectNear(const Vec3<T>& a, const Vec3<T>& b, T tolerance = static_cast<T>(1e-4)) {
+        EXPECT_NEAR(a[0], b[0], tolerance);
+        EXPECT_NEAR(a[1], b[1], tolerance);
+        EXPECT_NEAR(a[2], b[2], tolerance);
+    }
+} // namespace
 
 // =========================================================================
 // Construction
@@ -556,6 +569,360 @@ TEST(MatTest, SingularMatrixInverse) {
     constexpr auto b = Mat<float64, 2, 2>{};
 
     EXPECT_TRUE(inverse == b);
+}
+
+// =========================================================================
+// Zero
+// =========================================================================
+
+TEST(MatTest, Zero) {
+    constexpr auto mat = Mat4f::Zero();
+
+    for (usize row = 0; row < 4; ++row) {
+        for (usize col = 0; col < 4; ++col) {
+            EXPECT_FLOAT_EQ((mat[row, col]), 0.0f);
+        }
+    }
+}
+
+// =========================================================================
+// Rotation factories
+// =========================================================================
+
+TEST(MatTest, RotationXRotatesYIntoZ) {
+    const Mat4f rot = Mat4f::RotationX(kPi / 2.0f);
+    constexpr Vec3f v{0.0f, 1.0f, 0.0f};
+
+    const Vec3f result = rot.MultiplyVector(v);
+
+    ExpectNear(result, Vec3f{0.0f, 0.0f, 1.0f});
+}
+
+TEST(MatTest, RotationYRotatesZIntoX) {
+    const Mat4f rot = Mat4f::RotationY(kPi / 2.0f);
+    constexpr Vec3f v{0.0f, 0.0f, 1.0f};
+
+    const Vec3f result = rot.MultiplyVector(v);
+
+    ExpectNear(result, Vec3f{1.0f, 0.0f, 0.0f});
+}
+
+TEST(MatTest, RotationZRotatesXIntoY) {
+    const Mat4f rot = Mat4f::RotationZ(kPi / 2.0f);
+    constexpr Vec3f v{1.0f, 0.0f, 0.0f};
+
+    const Vec3f result = rot.MultiplyVector(v);
+
+    ExpectNear(result, Vec3f{0.0f, 1.0f, 0.0f});
+}
+
+TEST(MatTest, RotationXByZeroIsIdentity) {
+    const Mat4f rot = Mat4f::RotationX(0.0f);
+    const Mat4f identity = Mat4f::Identity();
+
+    for (usize row = 0; row < 4; ++row) {
+        for (usize col = 0; col < 4; ++col) {
+            EXPECT_NEAR((rot[row, col]), (identity[row, col]), 1e-6f);
+        }
+    }
+}
+
+// =========================================================================
+// Scale / Translate factories
+// =========================================================================
+
+TEST(MatTest, ScaleFactoryScalesPoint) {
+    const Mat4f mat = Mat4f::Scale(Vec3f{2.0f, 3.0f, 4.0f});
+    constexpr Vec3f point{1.0f, 1.0f, 1.0f};
+
+    const Vec3f result = mat.MultiplyPoint(point);
+
+    ExpectNear(result, Vec3f{2.0f, 3.0f, 4.0f});
+}
+
+TEST(MatTest, TranslateFactoryTranslatesPoint) {
+    const Mat4f mat = Mat4f::Translate(Vec3f{1.0f, 2.0f, 3.0f});
+    constexpr Vec3f point{0.0f, 0.0f, 0.0f};
+
+    const Vec3f result = mat.MultiplyPoint(point);
+
+    ExpectNear(result, Vec3f{1.0f, 2.0f, 3.0f});
+}
+
+TEST(MatTest, TranslateFactoryDoesNotAffectVector) {
+    const Mat4f mat = Mat4f::Translate(Vec3f{1.0f, 2.0f, 3.0f});
+    constexpr Vec3f direction{5.0f, 0.0f, 0.0f};
+
+    const Vec3f result = mat.MultiplyVector(direction);
+
+    ExpectNear(result, direction);
+}
+
+// =========================================================================
+// Rotate (from quaternion)
+// =========================================================================
+
+TEST(MatTest, RotateMatchesQuaternionRotateVector) {
+    const Quaternionf rotation = Quaternionf::FromAxisAngle(Vec3f{0.0f, 1.0f, 0.0f}, kPi / 3.0f);
+    const Mat4f mat = Mat4f::Rotate(rotation);
+
+    constexpr Vec3f v{1.0f, 0.0f, 0.0f};
+
+    ExpectNear(mat.MultiplyVector(v), rotation.RotateVector(v));
+}
+
+TEST(MatTest, RotateIdentityQuaternionIsIdentityMatrix) {
+    const Mat4f mat = Mat4f::Rotate(Quaternionf::Identity());
+    const Mat4f identity = Mat4f::Identity();
+
+    for (usize row = 0; row < 4; ++row) {
+        for (usize col = 0; col < 4; ++col) {
+            EXPECT_NEAR((mat[row, col]), (identity[row, col]), 1e-6f);
+        }
+    }
+}
+
+// =========================================================================
+// TRS
+// =========================================================================
+
+TEST(MatTest, TRSAppliesScaleRotateTranslateInOrder) {
+    constexpr Vec3f translation{10.0f, 0.0f, 0.0f};
+    const Quaternionf rotation = Quaternionf::Identity();
+    constexpr Vec3f scale{2.0f, 1.0f, 1.0f};
+
+    const Mat4f trs = Mat4f::TRS(translation, rotation, scale);
+    constexpr Vec3f localPoint{1.0f, 0.0f, 0.0f};
+
+    const Vec3f worldPoint = trs.MultiplyPoint(localPoint);
+
+    ExpectNear(worldPoint, Vec3f{12.0f, 0.0f, 0.0f});
+}
+
+TEST(MatTest, TRSWithIdentityComponentsIsIdentity) {
+    const Mat4f trs = Mat4f::TRS(Vec3f{0.0f, 0.0f, 0.0f}, Quaternionf::Identity(), Vec3f{1.0f, 1.0f, 1.0f});
+    const Mat4f identity = Mat4f::Identity();
+
+    for (usize row = 0; row < 4; ++row) {
+        for (usize col = 0; col < 4; ++col) {
+            EXPECT_NEAR((trs[row, col]), (identity[row, col]), 1e-6f);
+        }
+    }
+}
+
+// =========================================================================
+// Perspective / Ortho / LookAt
+// =========================================================================
+
+TEST(MatTest, PerspectiveMapsNearPlaneToNegativeOneNDC) {
+    const Mat4f persp = Mat4f::Perspective(kPi / 2.0f, 1.0f, 0.1f, 100.0f);
+
+    const Vec4f nearPoint{0.0f, 0.0f, -0.1f, 1.0f};
+    const Vec4f clip = persp * nearPoint;
+
+    EXPECT_NEAR(clip[2] / clip[3], -1.0f, 1e-4f);
+}
+
+TEST(MatTest, PerspectiveMapsFarPlaneToPositiveOneNDC) {
+    const Mat4f persp = Mat4f::Perspective(kPi / 2.0f, 1.0f, 0.1f, 100.0f);
+
+    const Vec4f farPoint{0.0f, 0.0f, -100.0f, 1.0f};
+    const Vec4f clip = persp * farPoint;
+
+    EXPECT_NEAR(clip[2] / clip[3], 1.0f, 1e-4f);
+}
+
+TEST(MatTest, OrthoMapsNearPlaneToNegativeOne) {
+    const Mat4f ortho = Mat4f::Ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
+
+    const Vec3f nearPoint{0.0f, 0.0f, -0.1f};
+    const Vec3f mapped = ortho.MultiplyPoint(nearPoint);
+
+    EXPECT_NEAR(mapped[2], -1.0f, 1e-4f);
+}
+
+TEST(MatTest, OrthoMapsFarPlaneToPositiveOne) {
+    const Mat4f ortho = Mat4f::Ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
+
+    const Vec3f farPoint{0.0f, 0.0f, -100.0f};
+    const Vec3f mapped = ortho.MultiplyPoint(farPoint);
+
+    EXPECT_NEAR(mapped[2], 1.0f, 1e-4f);
+}
+
+TEST(MatTest, OrthoMapsSideBoundsToUnitRange) {
+    const Mat4f ortho = Mat4f::Ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
+
+    const Vec3f corner{1.0f, 1.0f, -0.1f};
+    const Vec3f mapped = ortho.MultiplyPoint(corner);
+
+    EXPECT_NEAR(mapped[0], 1.0f, 1e-4f);
+    EXPECT_NEAR(mapped[1], 1.0f, 1e-4f);
+}
+
+TEST(MatTest, LookAtMapsEyeToOrigin) {
+    constexpr Vec3f eye{0.0f, 0.0f, 5.0f};
+    constexpr Vec3f target{0.0f, 0.0f, 0.0f};
+    constexpr Vec3f up{0.0f, 1.0f, 0.0f};
+
+    const Mat4f lookAt = Mat4f::LookAt(eye, target, up);
+    const Vec3f eyeInView = lookAt.MultiplyPoint(eye);
+
+    ExpectNear(eyeInView, Vec3f{0.0f, 0.0f, 0.0f});
+}
+
+TEST(MatTest, LookAtRotationIsOrthonormal) {
+    constexpr Vec3f eye{0.0f, 0.0f, 5.0f};
+    constexpr Vec3f target{0.0f, 0.0f, 0.0f};
+    constexpr Vec3f up{0.0f, 1.0f, 0.0f};
+
+    const Mat4f lookAt = Mat4f::LookAt(eye, target, up);
+
+    const Vec3f r0{lookAt[0, 0], lookAt[0, 1], lookAt[0, 2]};
+    const Vec3f r1{lookAt[1, 0], lookAt[1, 1], lookAt[1, 2]};
+    const Vec3f r2{lookAt[2, 0], lookAt[2, 1], lookAt[2, 2]};
+
+    EXPECT_NEAR(r0.Length(), 1.0f, 1e-4f);
+    EXPECT_NEAR(r1.Length(), 1.0f, 1e-4f);
+    EXPECT_NEAR(r2.Length(), 1.0f, 1e-4f);
+
+    EXPECT_NEAR(Dot(r0, r1), 0.0f, 1e-4f);
+    EXPECT_NEAR(Dot(r0, r2), 0.0f, 1e-4f);
+    EXPECT_NEAR(Dot(r1, r2), 0.0f, 1e-4f);
+}
+
+// =========================================================================
+// MultiplyPoint / MultiplyVector
+// =========================================================================
+
+TEST(MatTest, MultiplyPointAppliesTranslation) {
+    const Mat4f mat = Mat4f::Translate(Vec3f{1.0f, 2.0f, 3.0f});
+    constexpr Vec3f point{1.0f, 1.0f, 1.0f};
+
+    const Vec3f result = mat.MultiplyPoint(point);
+
+    ExpectNear(result, Vec3f{2.0f, 3.0f, 4.0f});
+}
+
+TEST(MatTest, MultiplyVectorIgnoresTranslation) {
+    const Mat4f mat = Mat4f::Translate(Vec3f{1.0f, 2.0f, 3.0f});
+    constexpr Vec3f vector{1.0f, 1.0f, 1.0f};
+
+    const Vec3f result = mat.MultiplyVector(vector);
+
+    ExpectNear(result, vector);
+}
+
+// =========================================================================
+// Extract Position / Scale / Rotation
+// =========================================================================
+
+TEST(MatTest, ExtractPositionFromTRS) {
+    constexpr Vec3f translation{1.0f, 2.0f, 3.0f};
+    const Mat4f trs = Mat4f::TRS(translation, Quaternionf::Identity(), Vec3f{1.0f, 1.0f, 1.0f});
+
+    ExpectNear(trs.ExtractPosition(), translation);
+}
+
+TEST(MatTest, ExtractScaleFromTRS) {
+    constexpr Vec3f scale{2.0f, 3.0f, 4.0f};
+    const Mat4f trs = Mat4f::TRS(Vec3f{0.0f, 0.0f, 0.0f}, Quaternionf::Identity(), scale);
+
+    ExpectNear(trs.ExtractScale(), scale);
+}
+
+TEST(MatTest, ExtractRotationFromTRS) {
+    const Quaternionf rotation = Quaternionf::FromAxisAngle(Vec3f{0.0f, 1.0f, 0.0f}, kPi / 4.0f);
+    const Mat4f trs = Mat4f::TRS(Vec3f{0.0f, 0.0f, 0.0f}, rotation, Vec3f{1.0f, 1.0f, 1.0f});
+
+    const Quaternionf extracted = trs.ExtractRotation();
+
+    EXPECT_NEAR(extracted.X(), rotation.X(), 1e-4f);
+    EXPECT_NEAR(extracted.Y(), rotation.Y(), 1e-4f);
+    EXPECT_NEAR(extracted.Z(), rotation.Z(), 1e-4f);
+    EXPECT_NEAR(extracted.W(), rotation.W(), 1e-4f);
+}
+
+TEST(MatTest, ExtractRoundTripsFullTRS) {
+    constexpr Vec3f translation{5.0f, -2.0f, 1.0f};
+    const Quaternionf rotation = Quaternionf::FromAxisAngle(Vec3f{1.0f, 0.0f, 0.0f}, kPi / 6.0f);
+    constexpr Vec3f scale{2.0f, 1.0f, 3.0f};
+
+    const Mat4f trs = Mat4f::TRS(translation, rotation, scale);
+
+    ExpectNear(trs.ExtractPosition(), translation);
+    ExpectNear(trs.ExtractScale(), scale);
+}
+
+// =========================================================================
+// Matrix-vector multiplication
+// =========================================================================
+
+TEST(MatTest, IdentityTimesVectorIsUnchanged) {
+    const Mat4f identity = Mat4f::Identity();
+    constexpr Vec4f v{1.0f, 2.0f, 3.0f, 1.0f};
+
+    const Vec4f result = identity * v;
+
+    EXPECT_FLOAT_EQ(result[0], 1.0f);
+    EXPECT_FLOAT_EQ(result[1], 2.0f);
+    EXPECT_FLOAT_EQ(result[2], 3.0f);
+    EXPECT_FLOAT_EQ(result[3], 1.0f);
+}
+
+TEST(MatTest, MatrixTimesVectorAppliesTransform) {
+    const Mat4f translate = Mat4f::Translate(Vec3f{1.0f, 2.0f, 3.0f});
+    constexpr Vec4f v{0.0f, 0.0f, 0.0f, 1.0f};
+
+    const Vec4f result = translate * v;
+
+    EXPECT_FLOAT_EQ(result[0], 1.0f);
+    EXPECT_FLOAT_EQ(result[1], 2.0f);
+    EXPECT_FLOAT_EQ(result[2], 3.0f);
+    EXPECT_FLOAT_EQ(result[3], 1.0f);
+}
+
+// =========================================================================
+// ToRadians
+// =========================================================================
+
+TEST(MatTest, ToRadiansZero) {
+    EXPECT_FLOAT_EQ(ToRadians(0.0f), 0.0f);
+}
+
+TEST(MatTest, ToRadiansOneEighty) {
+    EXPECT_FLOAT_EQ(ToRadians(180.0f), kPi);
+}
+
+TEST(MatTest, ToRadiansNinety) {
+    EXPECT_NEAR(ToRadians(90.0f), kPi / 2.0f, 1e-5f);
+}
+
+// =========================================================================
+// ValidTRS
+// =========================================================================
+
+TEST(MatTest, ValidTRSAcceptsIdentity) {
+    EXPECT_TRUE(ValidTRS(Mat4f::Identity()));
+}
+
+TEST(MatTest, ValidTRSAcceptsProperTRS) {
+    const Mat4f trs =
+        Mat4f::TRS(Vec3f{1.0f, 2.0f, 3.0f}, Quaternionf::FromAxisAngle(Vec3f{0.0f, 1.0f, 0.0f}, kPi / 4.0f),
+                   Vec3f{2.0f, 2.0f, 2.0f});
+
+    EXPECT_TRUE(ValidTRS(trs));
+}
+
+TEST(MatTest, ValidTRSRejectsZeroMatrix) {
+    EXPECT_FALSE(ValidTRS(Mat4f::Zero()));
+}
+
+TEST(MatTest, ValidTRSRejectsNonAffineBottomRow) {
+    Mat4f mat = Mat4f::Identity();
+    mat[3, 0] = 1.0f;
+
+    EXPECT_FALSE(ValidTRS(mat));
 }
 
 // =========================================================================

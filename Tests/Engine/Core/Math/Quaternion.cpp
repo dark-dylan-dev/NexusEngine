@@ -120,6 +120,82 @@ TEST(QuaternionTest, MixedValueTypes) {
 }
 
 // =========================================================================
+// FromToRotation
+// =========================================================================
+
+TEST(QuaternionTest, FromToRotationIdenticalVectors) {
+    constexpr Vec3<float32> v{1.0f, 0.0f, 0.0f};
+
+    const Quaternion<float32> q = Quaternion<float32>::FromToRotation(v, v);
+
+    ExpectNear(q, Quaternion<float32>::Identity());
+}
+
+TEST(QuaternionTest, FromToRotationOpposingVectors) {
+    constexpr Vec3<float32> from{1.0f, 0.0f, 0.0f};
+    constexpr Vec3<float32> to{-1.0f, 0.0f, 0.0f};
+
+    const Quaternion<float32> q = Quaternion<float32>::FromToRotation(from, to);
+
+    EXPECT_NEAR(q.Length(), 1.0f, 1e-4f);
+
+    const Vec3<float32> rotated = q.RotateVector(from);
+
+    ExpectNear(rotated, to);
+}
+
+TEST(QuaternionTest, FromToRotationRotatesFromOntoTo) {
+    constexpr Vec3<float32> from{1.0f, 0.0f, 0.0f};
+    constexpr Vec3<float32> to{0.0f, 1.0f, 0.0f};
+
+    const Quaternion<float32> q = Quaternion<float32>::FromToRotation(from, to);
+    const Vec3<float32> rotated = q.RotateVector(from);
+
+    ExpectNear(rotated, to);
+}
+
+TEST(QuaternionTest, FromToRotationIsNormalized) {
+    constexpr Vec3<float32> from{1.0f, 0.0f, 0.0f};
+    constexpr Vec3<float32> to{0.0f, 0.0f, 1.0f};
+
+    const Quaternion<float32> q = Quaternion<float32>::FromToRotation(from, to);
+
+    EXPECT_NEAR(q.Length(), 1.0f, 1e-4f);
+}
+
+// =========================================================================
+// LookRotation
+// =========================================================================
+
+TEST(QuaternionTest, LookRotationIdentityForForwardZ) {
+    constexpr Vec3<float32> forward{0.0f, 0.0f, 1.0f};
+    constexpr Vec3<float32> up{0.0f, 1.0f, 0.0f};
+
+    const Quaternion<float32> q = Quaternion<float32>::LookRotation(forward, up);
+
+    ExpectNear(q, Quaternion<float32>::Identity());
+}
+
+TEST(QuaternionTest, LookRotationRotatesForwardVector) {
+    constexpr Vec3<float32> forward{1.0f, 0.0f, 0.0f};
+    constexpr Vec3<float32> up{0.0f, 1.0f, 0.0f};
+
+    const Quaternion<float32> q = Quaternion<float32>::LookRotation(forward, up);
+    const Vec3<float32> rotated = q.RotateVector(Vec3<float32>{0.0f, 0.0f, 1.0f});
+
+    ExpectNear(rotated, forward);
+}
+
+TEST(QuaternionTest, LookRotationIsNormalized) {
+    constexpr Vec3<float32> forward{0.0f, 0.0f, 1.0f};
+    constexpr Vec3<float32> up{0.0f, 1.0f, 0.0f};
+
+    const Quaternion<float32> q = Quaternion<float32>::LookRotation(forward, up);
+
+    EXPECT_NEAR(q.Length(), 1.0f, 1e-4f);
+}
+
+// =========================================================================
 // Access
 // =========================================================================
 
@@ -684,6 +760,44 @@ TEST(QuaternionTest, YawClampsAtGimbalLock) {
 }
 
 // =========================================================================
+// ToAxisAngle
+// =========================================================================
+
+TEST(QuaternionTest, ToAxisAngleRoundTripsFromAxisAngle) {
+    constexpr Vec3<float32> axis{0.0f, 1.0f, 0.0f};
+    const Quaternion<float32> q = Quaternion<float32>::FromAxisAngle(axis, kPi / 2.0f);
+
+    Vec3<float32> outAxis;
+    float32 outAngle{};
+    q.ToAxisAngle(outAxis, outAngle);
+
+    ExpectNear(outAxis, axis);
+    EXPECT_NEAR(outAngle, kPi / 2.0f, 1e-4f);
+}
+
+TEST(QuaternionTest, ToAxisAngleIdentityHasZeroAngle) {
+    const Quaternion<float32> q = Quaternion<float32>::Identity();
+
+    Vec3<float32> outAxis;
+    float32 outAngle{};
+    q.ToAxisAngle(outAxis, outAngle);
+
+    EXPECT_NEAR(outAngle, 0.0f, 1e-4f);
+}
+
+TEST(QuaternionTest, ToAxisAngleFullTurn) {
+    constexpr Vec3<float32> axis{1.0f, 0.0f, 0.0f};
+    const Quaternion<float32> q = Quaternion<float32>::FromAxisAngle(axis, kPi);
+
+    Vec3<float32> outAxis;
+    float32 outAngle{};
+    q.ToAxisAngle(outAxis, outAngle);
+
+    ExpectNear(outAxis, axis);
+    EXPECT_NEAR(outAngle, kPi, 1e-4f);
+}
+
+// =========================================================================
 // Dot / Lerp / Slerp
 // =========================================================================
 
@@ -784,6 +898,100 @@ TEST(QuaternionTest, SlerpNearIdenticalQuaternionsFallsBackToLerp) {
     const Quaternion<float32> result = Slerp(a, b, 0.5f);
 
     EXPECT_NEAR(result.Length(), 1.0f, 1e-4f);
+}
+
+// =========================================================================
+// LerpUnclamped / SlerpUnclamped
+// =========================================================================
+
+TEST(QuaternionTest, LerpUnclampedMatchesLerpWithinRange) {
+    const Quaternion<float32> a = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 0.0f, 1.0f}, 0.0f);
+    const Quaternion<float32> b = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 0.0f, 1.0f}, kPi / 2.0f);
+
+    ExpectNear(LerpUnclamped(a, b, 0.5f), Lerp(a, b, 0.5f));
+}
+
+TEST(QuaternionTest, LerpUnclampedExtrapolatesPastEnd) {
+    const Quaternion<float32> a = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 0.0f, 1.0f}, 0.0f);
+    const Quaternion<float32> b = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 0.0f, 1.0f}, kPi / 2.0f);
+
+    const Quaternion<float32> clamped = Lerp(a, b, 1.5f);
+    const Quaternion<float32> unclamped = LerpUnclamped(a, b, 1.5f);
+
+    EXPECT_NEAR(unclamped.Length(), 1.0f, 1e-4f);
+    EXPECT_GT(std::abs(unclamped.Z() - clamped.Z()), 1e-4f);
+}
+
+TEST(QuaternionTest, SlerpUnclampedMatchesSlerpWithinRange) {
+    const Quaternion<float32> a = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 1.0f, 0.0f}, 0.0f);
+    const Quaternion<float32> b = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 1.0f, 0.0f}, kPi / 2.0f);
+
+    ExpectNear(SlerpUnclamped(a, b, 0.5f), Slerp(a, b, 0.5f));
+}
+
+TEST(QuaternionTest, SlerpUnclampedIsNormalizedPastEnd) {
+    const Quaternion<float32> a = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 1.0f, 0.0f}, 0.0f);
+    const Quaternion<float32> b = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 1.0f, 0.0f}, kPi / 2.0f);
+
+    const Quaternion<float32> result = SlerpUnclamped(a, b, 1.5f);
+
+    EXPECT_NEAR(result.Length(), 1.0f, 1e-4f);
+}
+
+// =========================================================================
+// Angle
+// =========================================================================
+
+TEST(QuaternionTest, AngleBetweenIdenticalQuaternionsIsZero) {
+    const Quaternion<float32> q = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 1.0f, 0.0f}, kPi / 3.0f);
+
+    EXPECT_NEAR(Angle(q, q), 0.0f, 1e-4f);
+}
+
+TEST(QuaternionTest, AngleBetweenIdentityAndRotatedQuaternion) {
+    const Quaternion<float32> identity = Quaternion<float32>::Identity();
+    const Quaternion<float32> rotated = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 1.0f, 0.0f}, kPi / 2.0f);
+
+    EXPECT_NEAR(Angle(identity, rotated), kPi / 2.0f, 1e-4f);
+}
+
+TEST(QuaternionTest, AngleIsSignInvariant) {
+    const Quaternion<float32> a = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 1.0f, 0.0f}, kPi / 2.0f);
+    const Quaternion<float32> b = -a;
+
+    // acos loses precision near its domain boundary, so this needs a looser tolerance than usual.
+    EXPECT_NEAR(Angle(a, b), 0.0f, 1e-2f);
+}
+
+// =========================================================================
+// RotateTowards
+// =========================================================================
+
+TEST(QuaternionTest, RotateTowardsPartialStep) {
+    const Quaternion<float32> from = Quaternion<float32>::Identity();
+    const Quaternion<float32> to = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 0.0f, 1.0f}, kPi / 2.0f);
+
+    const Quaternion<float32> result = RotateTowards(from, to, kPi / 4.0f);
+
+    EXPECT_NEAR(Angle(from, result), kPi / 4.0f, 1e-3f);
+}
+
+TEST(QuaternionTest, RotateTowardsOvershootClampsToTarget) {
+    const Quaternion<float32> from = Quaternion<float32>::Identity();
+    const Quaternion<float32> to = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 0.0f, 1.0f}, kPi / 2.0f);
+
+    const Quaternion<float32> result = RotateTowards(from, to, kPi);
+
+    ExpectNear(result, to);
+}
+
+TEST(QuaternionTest, RotateTowardsSameRotationReturnsTarget) {
+    const Quaternion<float32> from = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 0.0f, 1.0f}, kPi / 3.0f);
+    const Quaternion<float32> to = Quaternion<float32>::FromAxisAngle(Vec3<float32>{0.0f, 0.0f, 1.0f}, kPi / 3.0f);
+
+    const Quaternion<float32> result = RotateTowards(from, to, kPi / 4.0f);
+
+    ExpectNear(result, to);
 }
 
 // =========================================================================

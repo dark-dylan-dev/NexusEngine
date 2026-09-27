@@ -468,6 +468,368 @@ TEST(VecTest, ConstexprArithmetic) {
 }
 
 // =========================================================================
+// Length / Normalize
+// =========================================================================
+
+TEST(VecTest, LengthSquared) {
+    constexpr Vec<int, 3> vec{3, 4, 0};
+
+    EXPECT_EQ(vec.LengthSquared(), 25);
+}
+
+TEST(VecTest, Length) {
+    const Vec<float32, 3> vec{3.0f, 4.0f, 0.0f};
+
+    EXPECT_FLOAT_EQ(vec.Length(), 5.0f);
+}
+
+TEST(VecTest, LengthOfZeroVector) {
+    constexpr Vec<float32, 3> vec{0.0f, 0.0f, 0.0f};
+
+    EXPECT_FLOAT_EQ(vec.LengthSquared(), 0.0f);
+    EXPECT_FLOAT_EQ(vec.Length(), 0.0f);
+}
+
+TEST(VecTest, Normalized) {
+    const Vec<float32, 3> vec{3.0f, 4.0f, 0.0f};
+
+    const auto result = vec.Normalized();
+
+    EXPECT_FLOAT_EQ(result.Length(), 1.0f);
+    EXPECT_FLOAT_EQ(result[0], 0.6f);
+    EXPECT_FLOAT_EQ(result[1], 0.8f);
+    EXPECT_FLOAT_EQ(result[2], 0.0f);
+}
+
+TEST(VecTest, NormalizedDoesNotMutate) {
+    const Vec<float32, 3> vec{3.0f, 4.0f, 0.0f};
+
+    [[maybe_unused]] const auto result = vec.Normalized();
+
+    EXPECT_FLOAT_EQ(vec[0], 3.0f);
+    EXPECT_FLOAT_EQ(vec[1], 4.0f);
+}
+
+TEST(VecTest, NormalizedZeroVector) {
+    constexpr Vec<float32, 3> vec{0.0f, 0.0f, 0.0f};
+
+    const auto result = vec.Normalized();
+
+    EXPECT_FLOAT_EQ(result[0], 0.0f);
+    EXPECT_FLOAT_EQ(result[1], 0.0f);
+    EXPECT_FLOAT_EQ(result[2], 0.0f);
+}
+
+TEST(VecTest, Normalize) {
+    Vec<float32, 3> vec{3.0f, 4.0f, 0.0f};
+
+    vec.Normalize();
+
+    EXPECT_FLOAT_EQ(vec.Length(), 1.0f);
+    EXPECT_FLOAT_EQ(vec[0], 0.6f);
+    EXPECT_FLOAT_EQ(vec[1], 0.8f);
+}
+
+// =========================================================================
+// Dot
+// =========================================================================
+
+TEST(VecTest, Dot) {
+    constexpr Vec<int, 3> a{1, 2, 3};
+    constexpr Vec<int, 3> b{4, 5, 6};
+
+    EXPECT_EQ(Dot(a, b), 32);
+}
+
+TEST(VecTest, DotOfOrthogonalVectors) {
+    constexpr Vec<int, 3> a{1, 0, 0};
+    constexpr Vec<int, 3> b{0, 1, 0};
+
+    EXPECT_EQ(Dot(a, b), 0);
+}
+
+TEST(VecTest, DotCommonType) {
+    constexpr Vec<int, 3> a{1, 2, 3};
+    constexpr Vec<float32, 3> b{0.5f, 0.5f, 0.5f};
+
+    constexpr auto result = Dot(a, b);
+
+    static_assert(std::is_same_v<decltype(result), const float32>);
+
+    EXPECT_FLOAT_EQ(result, 3.0f);
+}
+
+// =========================================================================
+// Cross
+// =========================================================================
+
+TEST(VecTest, Cross) {
+    constexpr Vec<int, 3> a{1, 0, 0};
+    constexpr Vec<int, 3> b{0, 1, 0};
+
+    constexpr auto result = Cross(a, b);
+
+    EXPECT_EQ(result[0], 0);
+    EXPECT_EQ(result[1], 0);
+    EXPECT_EQ(result[2], 1);
+}
+
+TEST(VecTest, CrossOfParallelVectorsIsZero) {
+    constexpr Vec<int, 3> a{2, 4, 6};
+    constexpr Vec<int, 3> b{1, 2, 3};
+
+    constexpr auto result = Cross(a, b);
+
+    EXPECT_EQ(result[0], 0);
+    EXPECT_EQ(result[1], 0);
+    EXPECT_EQ(result[2], 0);
+}
+
+TEST(VecTest, CrossIsAnticommutative) {
+    constexpr Vec<int, 3> a{1, 2, 3};
+    constexpr Vec<int, 3> b{4, 5, 6};
+
+    constexpr auto ab = Cross(a, b);
+    constexpr auto ba = Cross(b, a);
+
+    EXPECT_EQ(ab[0], -ba[0]);
+    EXPECT_EQ(ab[1], -ba[1]);
+    EXPECT_EQ(ab[2], -ba[2]);
+}
+
+// =========================================================================
+// Distance
+// =========================================================================
+
+TEST(VecTest, Distance) {
+    constexpr Vec<float32, 3> a{0.0f, 0.0f, 0.0f};
+    constexpr Vec<float32, 3> b{3.0f, 4.0f, 0.0f};
+
+    EXPECT_FLOAT_EQ(Distance(a, b), 5.0f);
+}
+
+TEST(VecTest, DistanceToSelfIsZero) {
+    constexpr Vec<float32, 3> a{1.0f, 2.0f, 3.0f};
+
+    EXPECT_FLOAT_EQ(Distance(a, a), 0.0f);
+}
+
+TEST(VecTest, DistanceIsSymmetric) {
+    constexpr Vec<float32, 3> a{1.0f, 2.0f, 3.0f};
+    constexpr Vec<float32, 3> b{4.0f, 6.0f, 3.0f};
+
+    EXPECT_FLOAT_EQ(Distance(a, b), Distance(b, a));
+}
+
+// =========================================================================
+// Angle
+// =========================================================================
+
+TEST(VecTest, AngleBetweenIdenticalVectors) {
+    constexpr Vec<float32, 3> a{1.0f, 0.0f, 0.0f};
+
+    EXPECT_NEAR(Angle(a, a), 0.0f, 1e-5f);
+}
+
+TEST(VecTest, AngleBetweenPerpendicularVectors) {
+    constexpr Vec<float32, 3> a{1.0f, 0.0f, 0.0f};
+    constexpr Vec<float32, 3> b{0.0f, 1.0f, 0.0f};
+
+    EXPECT_NEAR(Angle(a, b), std::numbers::pi_v<float32> / 2.0f, 1e-5f);
+}
+
+TEST(VecTest, AngleBetweenOpposingVectors) {
+    constexpr Vec<float32, 3> a{1.0f, 0.0f, 0.0f};
+    constexpr Vec<float32, 3> b{-1.0f, 0.0f, 0.0f};
+
+    EXPECT_NEAR(Angle(a, b), std::numbers::pi_v<float32>, 1e-5f);
+}
+
+TEST(VecTest, AngleIsScaleInvariant) {
+    constexpr Vec<float32, 3> a{1.0f, 0.0f, 0.0f};
+    constexpr Vec<float32, 3> b{0.0f, 5.0f, 0.0f};
+
+    EXPECT_NEAR(Angle(a, b), std::numbers::pi_v<float32> / 2.0f, 1e-5f);
+}
+
+// =========================================================================
+// Lerp
+// =========================================================================
+
+TEST(VecTest, LerpAtStart) {
+    constexpr Vec<float32, 3> a{0.0f, 0.0f, 0.0f};
+    constexpr Vec<float32, 3> b{10.0f, 20.0f, 30.0f};
+
+    const auto result = Lerp(a, b, 0.0f);
+
+    EXPECT_FLOAT_EQ(result[0], 0.0f);
+    EXPECT_FLOAT_EQ(result[1], 0.0f);
+    EXPECT_FLOAT_EQ(result[2], 0.0f);
+}
+
+TEST(VecTest, LerpAtEnd) {
+    constexpr Vec<float32, 3> a{0.0f, 0.0f, 0.0f};
+    constexpr Vec<float32, 3> b{10.0f, 20.0f, 30.0f};
+
+    const auto result = Lerp(a, b, 1.0f);
+
+    EXPECT_FLOAT_EQ(result[0], 10.0f);
+    EXPECT_FLOAT_EQ(result[1], 20.0f);
+    EXPECT_FLOAT_EQ(result[2], 30.0f);
+}
+
+TEST(VecTest, LerpAtMidpoint) {
+    constexpr Vec<float32, 3> a{0.0f, 0.0f, 0.0f};
+    constexpr Vec<float32, 3> b{10.0f, 20.0f, 30.0f};
+
+    const auto result = Lerp(a, b, 0.5f);
+
+    EXPECT_FLOAT_EQ(result[0], 5.0f);
+    EXPECT_FLOAT_EQ(result[1], 10.0f);
+    EXPECT_FLOAT_EQ(result[2], 15.0f);
+}
+
+// =========================================================================
+// Scale
+// =========================================================================
+
+TEST(VecTest, Scale) {
+    constexpr Vec<int, 3> a{2, 3, 4};
+    constexpr Vec<int, 3> b{5, 6, 7};
+
+    constexpr auto result = Scale(a, b);
+
+    EXPECT_EQ(result[0], 10);
+    EXPECT_EQ(result[1], 18);
+    EXPECT_EQ(result[2], 28);
+}
+
+TEST(VecTest, ScaleMatchesComponentMultiplication) {
+    constexpr Vec<int, 3> a{2, 3, 4};
+    constexpr Vec<int, 3> b{5, 6, 7};
+
+    EXPECT_TRUE(Scale(a, b) == (a * b));
+}
+
+// =========================================================================
+// Min / Max
+// =========================================================================
+
+TEST(VecTest, Min) {
+    constexpr Vec<int, 3> a{1, 5, 3};
+    constexpr Vec<int, 3> b{4, 2, 6};
+
+    constexpr auto result = Min(a, b);
+
+    EXPECT_EQ(result[0], 1);
+    EXPECT_EQ(result[1], 2);
+    EXPECT_EQ(result[2], 3);
+}
+
+TEST(VecTest, Max) {
+    constexpr Vec<int, 3> a{1, 5, 3};
+    constexpr Vec<int, 3> b{4, 2, 6};
+
+    constexpr auto result = Max(a, b);
+
+    EXPECT_EQ(result[0], 4);
+    EXPECT_EQ(result[1], 5);
+    EXPECT_EQ(result[2], 6);
+}
+
+// =========================================================================
+// MoveTowards
+// =========================================================================
+
+TEST(VecTest, MoveTowardsPartialStep) {
+    constexpr Vec<float32, 3> current{0.0f, 0.0f, 0.0f};
+    constexpr Vec<float32, 3> target{10.0f, 0.0f, 0.0f};
+
+    const auto result = MoveTowards(current, target, 4.0f);
+
+    EXPECT_FLOAT_EQ(result[0], 4.0f);
+    EXPECT_FLOAT_EQ(result[1], 0.0f);
+    EXPECT_FLOAT_EQ(result[2], 0.0f);
+}
+
+TEST(VecTest, MoveTowardsOvershootClampsToTarget) {
+    constexpr Vec<float32, 3> current{0.0f, 0.0f, 0.0f};
+    constexpr Vec<float32, 3> target{10.0f, 0.0f, 0.0f};
+
+    const auto result = MoveTowards(current, target, 100.0f);
+
+    EXPECT_FLOAT_EQ(result[0], 10.0f);
+    EXPECT_FLOAT_EQ(result[1], 0.0f);
+    EXPECT_FLOAT_EQ(result[2], 0.0f);
+}
+
+TEST(VecTest, MoveTowardsSamePointReturnsTarget) {
+    constexpr Vec<float32, 3> current{5.0f, 5.0f, 5.0f};
+    constexpr Vec<float32, 3> target{5.0f, 5.0f, 5.0f};
+
+    const auto result = MoveTowards(current, target, 1.0f);
+
+    EXPECT_FLOAT_EQ(result[0], 5.0f);
+    EXPECT_FLOAT_EQ(result[1], 5.0f);
+    EXPECT_FLOAT_EQ(result[2], 5.0f);
+}
+
+// =========================================================================
+// Reflect
+// =========================================================================
+
+TEST(VecTest, ReflectOffFlatSurface) {
+    constexpr Vec<float32, 3> v{1.0f, -1.0f, 0.0f};
+    constexpr Vec<float32, 3> normal{0.0f, 1.0f, 0.0f};
+
+    const auto result = Reflect(v, normal);
+
+    EXPECT_FLOAT_EQ(result[0], 1.0f);
+    EXPECT_FLOAT_EQ(result[1], 1.0f);
+    EXPECT_FLOAT_EQ(result[2], 0.0f);
+}
+
+TEST(VecTest, ReflectStraightOnBouncesBack) {
+    constexpr Vec<float32, 3> v{0.0f, -1.0f, 0.0f};
+    constexpr Vec<float32, 3> normal{0.0f, 1.0f, 0.0f};
+
+    const auto result = Reflect(v, normal);
+
+    EXPECT_FLOAT_EQ(result[0], 0.0f);
+    EXPECT_FLOAT_EQ(result[1], 1.0f);
+    EXPECT_FLOAT_EQ(result[2], 0.0f);
+}
+
+// =========================================================================
+// Perpendicular
+// =========================================================================
+
+TEST(VecTest, Perpendicular) {
+    constexpr Vec<float32, 2> v{1.0f, 0.0f};
+
+    constexpr auto result = Perpendicular(v);
+
+    EXPECT_FLOAT_EQ(result[0], 0.0f);
+    EXPECT_FLOAT_EQ(result[1], 1.0f);
+}
+
+TEST(VecTest, PerpendicularIsOrthogonal) {
+    constexpr Vec<float32, 2> v{3.0f, 4.0f};
+
+    constexpr auto result = Perpendicular(v);
+
+    EXPECT_FLOAT_EQ(Dot(v, result), 0.0f);
+}
+
+TEST(VecTest, PerpendicularPreservesLength) {
+    const Vec<float32, 2> v{3.0f, 4.0f};
+
+    const auto result = Perpendicular(v);
+
+    EXPECT_FLOAT_EQ(result.Length(), v.Length());
+}
+
+// =========================================================================
 // Higher dimensions
 // =========================================================================
 
