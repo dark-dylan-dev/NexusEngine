@@ -56,8 +56,7 @@ namespace Nexus::RHI {
         appInfo.setPApplicationName("Nexus Engine");
         appInfo.setPEngineName("Nexus Engine");
 
-        std::vector<const char*> instanceExtensions = {vk::EXTDebugUtilsExtensionName,
-                                                       vk::KHRSurfaceExtensionName};
+        std::vector<const char*> instanceExtensions = {vk::EXTDebugUtilsExtensionName, vk::KHRSurfaceExtensionName};
         if (glfwVulkanSupported()) {
             uint32 glfwExtensionCount = 0;
             const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -117,36 +116,41 @@ namespace Nexus::RHI {
     }
 
     void VulkanDevice::CreatePhysicalDevice() {
-        auto physicalDevices = m_Instance.enumeratePhysicalDevices();
+        const auto physicalDevices = m_Instance.enumeratePhysicalDevices();
+
         for (const auto& device : physicalDevices) {
-            vk::PhysicalDeviceProperties properties = device.getProperties();
+            const auto properties = device.getProperties();
+
             if (properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu) {
                 m_PhysicalDevice = device;
                 break;
             }
         }
 
-        auto properties = m_PhysicalDevice.getProperties();
+        if (!*m_PhysicalDevice) {
+            throw std::runtime_error("No suitable discrete Vulkan GPU found.");
+        }
+
+        const auto properties = m_PhysicalDevice.getProperties();
+
         std::println("Using Vulkan device: {}", properties.deviceName.data());
 
         m_OptimalRowPitchAlignment = properties.limits.optimalBufferCopyRowPitchAlignment;
+
         m_BufferImageGranularity = properties.limits.bufferImageGranularity;
     }
 
     void VulkanDevice::CreateDevice() {
-        std::vector<const char*> mandatoryExtensions = {vk::KHRSwapchainExtensionName,
-                                                        vk::EXTDescriptorIndexingExtensionName,
-                                                        vk::KHRDynamicRenderingExtensionName,
-                                                        vk::EXTMutableDescriptorTypeExtensionName,
-                                                        vk::KHRBufferDeviceAddressExtensionName,
-                                                        vk::KHRSynchronization2ExtensionName};
+        std::vector<const char*> mandatoryExtensions = {
+            vk::KHRSwapchainExtensionName,           vk::EXTDescriptorIndexingExtensionName,
+            vk::KHRDynamicRenderingExtensionName,    vk::EXTMutableDescriptorTypeExtensionName,
+            vk::KHRBufferDeviceAddressExtensionName, vk::KHRSynchronization2ExtensionName};
 
         std::map<const char*, bool> optionalExtensions = {{vk::EXTMeshShaderExtensionName, false},
                                                           {vk::KHRRayQueryExtensionName, false},
                                                           {vk::KHRAccelerationStructureExtensionName, false},
                                                           {vk::KHRRayTracingPipelineExtensionName, false},
                                                           {vk::KHRDeferredHostOperationsExtensionName, false}};
-
 
         const auto availableExtensions = m_PhysicalDevice.enumerateDeviceExtensionProperties();
         for (const auto& availableExtension : availableExtensions) {
@@ -203,7 +207,6 @@ namespace Nexus::RHI {
             m_SupportMeshShaders = true;
         }
 
-
         if (optionalExtensions[vk::KHRAccelerationStructureExtensionName]) {
             accelerationStructureFeatures.setAccelerationStructure(true);
             accelerationStructureFeatures.setDescriptorBindingAccelerationStructureUpdateAfterBind(true);
@@ -219,9 +222,8 @@ namespace Nexus::RHI {
             lastPNext = &rayTracingPipelineFeatures;
         }
 
-        const bool supportsRayQuery =
-            optionalExtensions[vk::KHRRayQueryExtensionName] &&
-            optionalExtensions[vk::KHRAccelerationStructureExtensionName];
+        const bool supportsRayQuery = optionalExtensions[vk::KHRRayQueryExtensionName] &&
+                                      optionalExtensions[vk::KHRAccelerationStructureExtensionName];
 
         if (supportsRayQuery) {
             rayQueryFeatures.setRayQuery(true);
@@ -250,7 +252,7 @@ namespace Nexus::RHI {
             }
         }
 
-        float queuePriority = 1.0f;
+        float32 queuePriority = 1.0f;
         vk::DeviceQueueCreateInfo queueCreateInfo;
         queueCreateInfo.setQueueFamilyIndex(m_MainQueueFamilyIndex);
         queueCreateInfo.setQueueCount(1);

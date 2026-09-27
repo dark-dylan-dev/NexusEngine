@@ -64,7 +64,8 @@ export namespace Nexus::RHI {
             return *this;
         }
 
-        static TextureViewDesc CreateDefault(RHI::Texture* texture, TextureViewType type, TextureViewDimension dimension) {
+        static TextureViewDesc CreateDefault(RHI::Texture* texture, TextureViewType type,
+                                             TextureViewDimension dimension) {
             TextureViewDesc desc = {};
             desc.Type = type;
             desc.Texture = texture;

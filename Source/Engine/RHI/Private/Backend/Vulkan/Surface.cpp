@@ -19,8 +19,10 @@ import vulkan;
 
 import std;
 
-static vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const Nexus::RHI::VulkanDevice* device, const vk::SurfaceKHR& surface) {
-    std::vector<vk::SurfaceFormatKHR> availableFormats = device->GetVulkanPhysicalDevice().getSurfaceFormatsKHR(surface);
+static vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const Nexus::RHI::VulkanDevice* device,
+                                                    const vk::SurfaceKHR& surface) {
+    std::vector<vk::SurfaceFormatKHR> availableFormats =
+        device->GetVulkanPhysicalDevice().getSurfaceFormatsKHR(surface);
 
     if (availableFormats.empty()) {
         std::unreachable();
@@ -71,8 +73,7 @@ namespace Nexus::RHI {
         swapchainCreateInfo.setMinImageCount(2);
         swapchainCreateInfo.setImageFormat(swapChainSurfaceFormat.format);
         swapchainCreateInfo.setImageColorSpace(swapChainSurfaceFormat.colorSpace);
-        swapchainCreateInfo.setImageExtent(
-            vk::Extent2D{static_cast<uint32>(m_Width), static_cast<uint32>(m_Height)});
+        swapchainCreateInfo.setImageExtent(vk::Extent2D{static_cast<uint32>(m_Width), static_cast<uint32>(m_Height)});
         swapchainCreateInfo.setImageArrayLayers(1);
         swapchainCreateInfo.setImageUsage(vk::ImageUsageFlagBits::eColorAttachment);
         swapchainCreateInfo.setImageSharingMode(vk::SharingMode::eExclusive);
@@ -91,8 +92,8 @@ namespace Nexus::RHI {
             desc.Format = TextureFormat::RGBA8_SRGB;
             desc.Usage = TextureUsage::RENDER_TARGET;
 
-            auto texture = std::make_unique<VulkanTexture>(VulkanTexture::AdoptExternal(swapchainImages[i], m_ParentDevice, desc,
-                                                                          "Swapchain Texture " + std::to_string(i)));
+            auto texture = std::make_unique<VulkanTexture>(VulkanTexture::AdoptExternal(
+                swapchainImages[i], m_ParentDevice, desc, "Swapchain Texture " + std::to_string(i)));
             m_Textures.push_back(std::move(texture));
         }
 
@@ -117,11 +118,10 @@ namespace Nexus::RHI {
         }
 
         for (uint32 i = 0; i < m_Textures.size(); i++) {
-            TextureViewDesc viewDesc = TextureViewDesc::CreateDefault(m_Textures[i].get(), TextureViewType::RENDER_TARGET,
-                                                                      TextureViewDimension::TEXTURE_2D);
+            TextureViewDesc viewDesc = TextureViewDesc::CreateDefault(
+                m_Textures[i].get(), TextureViewType::RENDER_TARGET, TextureViewDimension::TEXTURE_2D);
             m_TextureViews[i] = std::unique_ptr<VulkanTextureView>(
-                static_cast<VulkanTextureView*>(m_ParentDevice->CreateTextureView(viewDesc).release())
-            );
+                static_cast<VulkanTextureView*>(m_ParentDevice->CreateTextureView(viewDesc).release()));
         }
     }
 
@@ -365,8 +365,7 @@ namespace Nexus::RHI {
         swapchainCreateInfo.setMinImageCount(2);
         swapchainCreateInfo.setImageFormat(swapChainSurfaceFormat.format);
         swapchainCreateInfo.setImageColorSpace(swapChainSurfaceFormat.colorSpace);
-        swapchainCreateInfo.setImageExtent(
-            vk::Extent2D{static_cast<uint32>(m_Width), static_cast<uint32>(m_Height)});
+        swapchainCreateInfo.setImageExtent(vk::Extent2D{static_cast<uint32>(m_Width), static_cast<uint32>(m_Height)});
         swapchainCreateInfo.setImageArrayLayers(1);
         swapchainCreateInfo.setImageUsage(vk::ImageUsageFlagBits::eColorAttachment);
         swapchainCreateInfo.setImageSharingMode(vk::SharingMode::eExclusive);
@@ -391,17 +390,16 @@ namespace Nexus::RHI {
             desc.Format = TextureFormat::RGBA8_SRGB;
             desc.Usage = TextureUsage::RENDER_TARGET;
 
-            m_Textures[i] = std::make_unique<VulkanTexture>(VulkanTexture::AdoptExternal(swapchainImages[i], m_ParentDevice, desc,
-                                                                          "Swapchain Texture " + std::to_string(i)));
+            m_Textures[i] = std::make_unique<VulkanTexture>(VulkanTexture::AdoptExternal(
+                swapchainImages[i], m_ParentDevice, desc, "Swapchain Texture " + std::to_string(i)));
         }
 
         // Create texture views for ALL swapchain images
         for (uint32 i = 0; i < swapchainImages.size(); i++) {
-            TextureViewDesc viewDesc = TextureViewDesc::CreateDefault(m_Textures[i].get(), TextureViewType::RENDER_TARGET,
-                                                                      TextureViewDimension::TEXTURE_2D);
+            TextureViewDesc viewDesc = TextureViewDesc::CreateDefault(
+                m_Textures[i].get(), TextureViewType::RENDER_TARGET, TextureViewDimension::TEXTURE_2D);
             m_TextureViews[i] = std::unique_ptr<VulkanTextureView>(
-                static_cast<VulkanTextureView*>(m_ParentDevice->CreateTextureView(viewDesc).release())
-            );
+                static_cast<VulkanTextureView*>(m_ParentDevice->CreateTextureView(viewDesc).release()));
         }
     }
 } // namespace Nexus::RHI
