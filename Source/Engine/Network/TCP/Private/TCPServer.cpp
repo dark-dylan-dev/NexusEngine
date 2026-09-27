@@ -85,7 +85,8 @@ namespace Nexus::Network {
     }
 
     void TCPServer::Broadcast(std::span<const byte> framedData) {
-        for (TCPClient& client : m_clients | std::views::values) {
+        // TODO: Go back to std::views::values when clang gets it to work
+        for (auto& [_, client] : m_clients) {
             static_cast<void>(client.Send(framedData));
         }
     }
