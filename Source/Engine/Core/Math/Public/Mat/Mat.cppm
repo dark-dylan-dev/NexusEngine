@@ -8,6 +8,8 @@ export module NE.Engine.Math.Mat;
 
 import NE.Engine.Core.Config;
 import NE.Engine.Core.Types;
+import NE.Engine.Math.Vec;
+import NE.Engine.Math.Quaternion;
 
 import std;
 
@@ -93,6 +95,70 @@ export namespace Nexus {
         template <usize N = RowCount>
             requires(RowCount == ColCount && N == RowCount)
         constexpr Mat Inverse() const;
+
+        template <usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount)
+        static constexpr Mat Zero();
+
+        template <std::floating_point U = T, usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        static constexpr Mat RotationX(U angleRadians);
+
+        template <std::floating_point U = T, usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        static constexpr Mat RotationY(U angleRadians);
+
+        template <std::floating_point U = T, usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        static constexpr Mat RotationZ(U angleRadians);
+
+        template <Numeric U = T, usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        static constexpr Mat Scale(const Vec3<U>& scale);
+
+        template <Numeric U = T, usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        static constexpr Mat Translate(const Vec3<U>& translation);
+
+        template <std::floating_point U = T, usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        static constexpr Mat Rotate(const Quaternion<U>& rotation);
+
+        template <Numeric U = T, usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        static constexpr Mat TRS(const Vec3<U>& translation, const Quaternion<U>& rotation, const Vec3<U>& scale);
+
+        template <std::floating_point U = T, usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        static constexpr Mat Perspective(U fovYRadians, U aspect, U nearPlane, U farPlane);
+
+        template <std::floating_point U = T, usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        static constexpr Mat Ortho(U left, U right, U bottom, U top, U nearPlane, U farPlane);
+
+        template <std::floating_point U = T, usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        static constexpr Mat LookAt(const Vec3<U>& eye, const Vec3<U>& target, const Vec3<U>& up);
+
+        template <Numeric U, usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        constexpr Vec3<std::common_type_t<T, U>> MultiplyPoint(const Vec3<U>& point) const;
+
+        template <Numeric U, usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        constexpr Vec3<std::common_type_t<T, U>> MultiplyVector(const Vec3<U>& vector) const;
+
+        template <usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        constexpr Vec3<T> ExtractPosition() const;
+
+        template <usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        constexpr Vec3<T> ExtractScale() const;
+
+        template <std::floating_point U = T, usize R = RowCount, usize C = ColCount>
+            requires(R == RowCount && C == ColCount && R == 4 && C == 4)
+        constexpr Quaternion<U> ExtractRotation() const;
     };
 
     template <Numeric T, Numeric U, usize RowCount, usize ColCount, typename Layout>
@@ -125,6 +191,16 @@ export namespace Nexus {
 
     template <Numeric T, usize RowCount, usize ColCount, typename FromLayout, typename ToLayout>
     constexpr Mat<T, RowCount, ColCount, ToLayout> MatCastLayout(const Mat<T, RowCount, ColCount, FromLayout>& mat);
+
+    template <Numeric T, Numeric U, usize RowCount, usize ColCount, typename Layout>
+    constexpr auto operator*(const Mat<T, RowCount, ColCount, Layout>& mat, const Vec<U, ColCount>& vec)
+        -> Vec<std::common_type_t<T, U>, RowCount>;
+
+    template <std::floating_point T>
+    constexpr T ToRadians(T degrees);
+
+    template <Numeric T, usize RowCount, usize ColCount, typename Layout>
+    constexpr bool ValidTRS(const Mat<T, RowCount, ColCount, Layout>& mat);
 
     template <Numeric T, usize RowCount, usize ColCount>
     using MatRowMajor = Mat<T, RowCount, ColCount, RowMajor>;

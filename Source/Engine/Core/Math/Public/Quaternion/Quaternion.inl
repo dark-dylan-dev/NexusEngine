@@ -60,6 +60,73 @@ namespace Nexus {
     }
 
     template <std::floating_point T>
+    template <std::floating_point U>
+    constexpr Quaternion<T> Quaternion<T>::FromToRotation(const Vec3<U>& from, const Vec3<U>& to) {
+        const Vec3<U> nFrom = from.Normalized();
+        const Vec3<U> nTo = to.Normalized();
+
+        const U cosAngle = Dot(nFrom, nTo);
+
+        if (cosAngle > U{1} - static_cast<U>(1e-6)) {
+            return Identity();
+        }
+
+        if (cosAngle < U{-1} + static_cast<U>(1e-6)) {
+            Vec3<U> axis = Cross(Vec3<U>{U{1}, U{0}, U{0}}, nFrom);
+
+            if (axis.LengthSquared() < static_cast<U>(1e-12)) {
+                axis = Cross(Vec3<U>{U{0}, U{1}, U{0}}, nFrom);
+            }
+
+            return FromAxisAngle(axis.Normalized(), std::numbers::pi_v<U>);
+        }
+
+        const Vec3<U> axis = Cross(nFrom, nTo);
+        const U s = std::sqrt((U{1} + cosAngle) * U{2});
+        const U invS = U{1} / s;
+
+        return Quaternion(static_cast<T>(axis[0] * invS), static_cast<T>(axis[1] * invS),
+                          static_cast<T>(axis[2] * invS), static_cast<T>(s * U{0.5}))
+            .Normalized();
+    }
+
+    template <std::floating_point T>
+    template <std::floating_point U>
+    constexpr Quaternion<T> Quaternion<T>::LookRotation(const Vec3<U>& forward, const Vec3<U>& up) {
+        const Vec3<U> f = forward.Normalized();
+        const Vec3<U> right = Cross(up, f).Normalized();
+        const Vec3<U> trueUp = Cross(f, right);
+
+        const U m00 = right[0], m01 = trueUp[0], m02 = f[0];
+        const U m10 = right[1], m11 = trueUp[1], m12 = f[1];
+        const U m20 = right[2], m21 = trueUp[2], m22 = f[2];
+
+        const U trace = m00 + m11 + m22;
+
+        if (trace > U{0}) {
+            const U s = std::sqrt(trace + U{1}) * U{2};
+            return Quaternion(static_cast<T>((m21 - m12) / s), static_cast<T>((m02 - m20) / s),
+                              static_cast<T>((m10 - m01) / s), static_cast<T>(s * U{0.25}));
+        }
+
+        if (m00 > m11 && m00 > m22) {
+            const U s = std::sqrt(U{1} + m00 - m11 - m22) * U{2};
+            return Quaternion(static_cast<T>(s * U{0.25}), static_cast<T>((m01 + m10) / s),
+                              static_cast<T>((m02 + m20) / s), static_cast<T>((m21 - m12) / s));
+        }
+
+        if (m11 > m22) {
+            const U s = std::sqrt(U{1} + m11 - m00 - m22) * U{2};
+            return Quaternion(static_cast<T>((m01 + m10) / s), static_cast<T>(s * U{0.25}),
+                              static_cast<T>((m12 + m21) / s), static_cast<T>((m02 - m20) / s));
+        }
+
+        const U s = std::sqrt(U{1} + m22 - m00 - m11) * U{2};
+        return Quaternion(static_cast<T>((m02 + m20) / s), static_cast<T>((m12 + m21) / s), static_cast<T>(s * U{0.25}),
+                          static_cast<T>((m10 - m01) / s));
+    }
+
+    template <std::floating_point T>
     constexpr T& Quaternion<T>::X() {
         return m_x;
     }
@@ -281,6 +348,22 @@ namespace Nexus {
         return std::atan2(sinRoll, cosRoll);
     }
 
+    template <std::floating_point T>
+    constexpr void Quaternion<T>::ToAxisAngle(Vec3<T>& outAxis, T& outAngleRadians) const {
+        const Quaternion normalized = Normalized();
+        const T clampedW = normalized.m_w < T{-1} ? T{-1} : (normalized.m_w > T{1} ? T{1} : normalized.m_w);
+
+        outAngleRadians = T{2} * std::acos(clampedW);
+
+        const T s = std::sqrt(T{1} - clampedW * clampedW);
+
+        if (s < static_cast<T>(1e-6)) {
+            outAxis = Vec3<T>{T{1}, T{0}, T{0}};
+        } else {
+            outAxis = Vec3<T>{normalized.m_x / s, normalized.m_y / s, normalized.m_z / s};
+        }
+    }
+
     template <std::floating_point T, std::floating_point U>
     constexpr auto operator+(const Quaternion<T>& a, const Quaternion<U>& b) -> QuaternionCommon<T, U> {
         using R = std::common_type_t<T, U>;
@@ -352,12 +435,18 @@ namespace Nexus {
     }
 
     template <std::floating_point T>
-    constexpr Quaternion<T> Lerp(const Quaternion<T>& a, const Quaternion<T>& b, T t) {
+    constexpr Quaternion<T> LerpUnclamped(const Quaternion<T>& a, const Quaternion<T>& b, T t) {
         return (a * (T{1} - t) + b * t).Normalized();
     }
 
     template <std::floating_point T>
-    constexpr Quaternion<T> Slerp(const Quaternion<T>& a, const Quaternion<T>& b, T t) {
+    constexpr Quaternion<T> Lerp(const Quaternion<T>& a, const Quaternion<T>& b, T t) {
+        const T clampedT = t < T{0} ? T{0} : (t > T{1} ? T{1} : t);
+        return LerpUnclamped(a, b, clampedT);
+    }
+
+    template <std::floating_point T>
+    constexpr Quaternion<T> SlerpUnclamped(const Quaternion<T>& a, const Quaternion<T>& b, T t) {
         Quaternion<T> end = b;
         T cosOmega = Dot(a, b);
 
@@ -369,7 +458,7 @@ namespace Nexus {
         constexpr T kEpsilon = static_cast<T>(1e-6);
 
         if (cosOmega > T{1} - kEpsilon) {
-            return Lerp(a, end, t);
+            return LerpUnclamped(a, end, t);
         }
 
         const T omega = std::acos(cosOmega);
@@ -379,6 +468,37 @@ namespace Nexus {
         const T scaleB = std::sin(t * omega) / sinOmega;
 
         return (a * scaleA) + (end * scaleB);
+    }
+
+    template <std::floating_point T>
+    constexpr Quaternion<T> Slerp(const Quaternion<T>& a, const Quaternion<T>& b, T t) {
+        const T clampedT = t < T{0} ? T{0} : (t > T{1} ? T{1} : t);
+        return SlerpUnclamped(a, b, clampedT);
+    }
+
+    template <std::floating_point T>
+    constexpr T Angle(const Quaternion<T>& a, const Quaternion<T>& b) {
+        const T cosHalfAngle = Dot(a, b);
+        const T clamped = cosHalfAngle < T{-1} ? T{-1} : (cosHalfAngle > T{1} ? T{1} : cosHalfAngle);
+
+        return T{2} * std::acos(std::abs(clamped));
+    }
+
+    template <std::floating_point T>
+    constexpr Quaternion<T> RotateTowards(const Quaternion<T>& from, const Quaternion<T>& to, T maxAngleRadians) {
+        const T angle = Angle(from, to);
+
+        if (angle <= T{0}) {
+            return to;
+        }
+
+        const T t = maxAngleRadians / angle;
+
+        if (t >= T{1}) {
+            return to;
+        }
+
+        return SlerpUnclamped(from, to, t);
     }
 
 } // namespace Nexus
