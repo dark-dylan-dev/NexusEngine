@@ -1,0 +1,26 @@
+set(DISCORD_SDK_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
+set(DISCORD_SDK_LIB_DIR "${DISCORD_SDK_ROOT}/lib")
+set(DISCORD_SDK_BIN_DIR "${DISCORD_SDK_ROOT}/bin")
+set(DISCORD_SDK_INCLUDE_DIR "${DISCORD_SDK_ROOT}/include" CACHE BOOL "" FORCE)
+set(DISCORD_SDK_VERSION "1.10.19337")
+
+if(WIN32)
+    set(DISCORD_LIB_PATH "${DISCORD_SDK_LIB_DIR}/discord_partner_sdk.lib" CACHE BOOL "" FORCE)
+    set(DISCORD_SHARED_LIB "${DISCORD_SDK_BIN_DIR}/discord_partner_sdk.dll" CACHE BOOL "" FORCE)
+elseif(APPLE)
+    set(DISCORD_LIB_PATH "${DISCORD_SDK_LIB_DIR}/libdiscord_partner_sdk.dylib" CACHE BOOL "" FORCE)
+    set(DISCORD_SHARED_LIB "${DISCORD_SDK_LIB_DIR}/libdiscord_partner_sdk.dylib" CACHE BOOL "" FORCE)
+else() # Linux
+    set(DISCORD_LIB_PATH "${DISCORD_SDK_LIB_DIR}/libdiscord_partner_sdk.so" CACHE BOOL "" FORCE)
+    set(DISCORD_SHARED_LIB "${DISCORD_SDK_LIB_DIR}/libdiscord_partner_sdk.so" CACHE BOOL "" FORCE)
+endif()
+
+if(UNIX)
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+    set(CMAKE_INSTALL_RPATH "$ORIGIN")
+    if(APPLE)
+        set(CMAKE_INSTALL_RPATH "@executable_path")
+    endif()
+endif()
+
+message(STATUS "DiscordSocialSDK: Version ${DISCORD_SDK_VERSION}")

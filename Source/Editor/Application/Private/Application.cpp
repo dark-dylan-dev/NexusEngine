@@ -4,6 +4,8 @@ module NE.Editor.Application;
 
 import NexusEngine;
 
+import NE.Editor.Integration.DiscordRPC;
+
 namespace Nexus {
 
     void Application::run() {
@@ -18,7 +20,11 @@ namespace Nexus {
         const auto device = RHI::Device::Create();
         const auto surface = device->CreateSurface(window);
 
+        DiscordRPC richPresence;
+
         while (!window.ShouldClose()) {
+            richPresence.Update();
+
             window.PollEvents();
             int32 newWidth = window.GetWidth();
             int32 newHeight = window.GetHeight();
@@ -65,6 +71,8 @@ namespace Nexus {
                                  wave(t * 0.5 + 4.0) * 0.7 + wave(t * 0.11 + 2.0) * 0.3);
             surface->EndFrame();
         }
+        richPresence.Shutdown();
+
         logger.LogInfo(std::format("Engine ran for {:.3f} seconds", GetEngineTime()));
     }
 
