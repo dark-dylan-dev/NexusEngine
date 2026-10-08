@@ -1,5 +1,11 @@
 // SPDX-License-Identifier: MIT
 
+module;
+
+#if defined(_MSC_VER)
+#    include <intrin.h>
+#endif
+
 export module NE.Engine.Math.Simd.Config;
 
 import NE.Engine.Core.Config;
@@ -94,8 +100,6 @@ export namespace Nexus::Simd {
 #if defined(_M_X64) || defined(__x86_64__) || defined(_M_IX86) || defined(__i386__)
 
 #    if defined(_MSC_VER)
-
-#        include <intrin.h>
 
     struct cpuidResult {
         int eax;
