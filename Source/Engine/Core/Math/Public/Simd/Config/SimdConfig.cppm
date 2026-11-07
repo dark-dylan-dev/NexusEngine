@@ -2,7 +2,7 @@
 
 module;
 
-#if defined(_MSC_VER)
+#if defined(_WIN32) && defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))
 #    include <intrin.h>
 #endif
 
@@ -39,10 +39,12 @@ export namespace Nexus::Simd {
         avx512vpopcntdq,
         avx512bitalg,
         avx512bf16,
-        avx512fp16
+        avx512fp16,
+
+        count
     };
 
-    inline std::string FeatureToString(const Feature feature) {
+    inline constexpr std::string_view FeatureToString(const Feature feature) noexcept {
         switch (feature) {
             case Feature::mmx:
                 return "mmx";
@@ -93,7 +95,7 @@ export namespace Nexus::Simd {
             case Feature::avx512fp16:
                 return "avx512fp16";
             default:
-                return "";
+                return {};
         }
     }
 
@@ -101,140 +103,132 @@ export namespace Nexus::Simd {
 
 #    if defined(_MSC_VER)
 
-    struct cpuidResult {
-        int eax;
-        int ebx;
-        int ecx;
-        int edx;
-    };
+    namespace detail {
 
-    inline cpuidResult CPUID(unsigned leaf, unsigned subleaf = 0) noexcept {
-        int r[4];
-        __cpuidex(r, static_cast<int>(leaf), static_cast<int>(subleaf));
+        struct CpuIdResult {
+            uint32 eax;
+            uint32 ebx;
+            uint32 ecx;
+            uint32 edx;
+        };
 
-        return {r[0], r[1], r[2], r[3]};
-    }
+        inline CpuIdResult Cpuid(const int leaf, const int subleaf = 0) noexcept {
+            int registers[4];
+            __cpuidex(registers, leaf, subleaf);
 
-    inline bool Bit(int32 value, unsigned index) noexcept {
-        return (static_cast<uint32>(value) & (uint32{1} << index)) != 0;
-    }
-
-    inline unsigned maxBasicLeaf() noexcept {
-        return static_cast<unsigned>(CPUID(0).eax);
-    }
-
-    inline unsigned maxExtendedLeaf() noexcept {
-        return static_cast<unsigned>(CPUID(0x80000000).eax);
-    }
-
-    inline bool osAvxStateEnabled() noexcept {
-        if (maxBasicLeaf() < 1)
-            return false;
-
-        const auto r = CPUID(1);
-
-        // CPUID.1:ECX[27] = OSXSAVE
-        // CPUID.1:ECX[28] = AVX
-        if (!Bit(r.ecx, 27) || !Bit(r.ecx, 28))
-            return false;
-
-        // XCR0[1:2] = XMM and YMM state enabled by the OS.
-        return (_xgetbv(0) & 0x6) == 0x6;
-    }
-
-    inline bool osAvx512StateEnabled() noexcept {
-        if (!osAvxStateEnabled())
-            return false;
-
-        // XCR0[5:7] = opmask, ZMM_hi256, Hi16_ZMM.
-        return (_xgetbv(0) & 0xE0) == 0xE0;
-    }
-
-    inline bool Has(Feature f) noexcept {
-        const unsigned basicMax = maxBasicLeaf();
-
-        switch (f) {
-            case Feature::mmx:
-                return basicMax >= 1 && Bit(CPUID(1).edx, 23);
-
-            case Feature::sse:
-                return basicMax >= 1 && Bit(CPUID(1).edx, 25);
-
-            case Feature::sse2:
-                return basicMax >= 1 && Bit(CPUID(1).edx, 26);
-
-            case Feature::sse3:
-                return basicMax >= 1 && Bit(CPUID(1).ecx, 0);
-
-            case Feature::ssse3:
-                return basicMax >= 1 && Bit(CPUID(1).ecx, 9);
-
-            case Feature::sse4_1:
-                return basicMax >= 1 && Bit(CPUID(1).ecx, 19);
-
-            case Feature::sse4_2:
-                return basicMax >= 1 && Bit(CPUID(1).ecx, 20);
-
-            case Feature::sse4a:
-                return maxExtendedLeaf() >= 0x80000001 && Bit(CPUID(0x80000001).ecx, 6);
-
-            case Feature::avx:
-                return basicMax >= 1 && Bit(CPUID(1).ecx, 28) && osAvxStateEnabled();
-
-            case Feature::fma:
-                return basicMax >= 1 && Bit(CPUID(1).ecx, 12) && osAvxStateEnabled();
-
-            case Feature::avx2:
-                return basicMax >= 7 && osAvxStateEnabled() && Bit(CPUID(7, 0).ebx, 5);
-
-            case Feature::avx512f:
-                return basicMax >= 7 && osAvx512StateEnabled() && Bit(CPUID(7, 0).ebx, 16);
-
-            case Feature::avx512dq:
-                return basicMax >= 7 && osAvx512StateEnabled() && Bit(CPUID(7, 0).ebx, 17);
-
-            case Feature::avx512ifma:
-                return basicMax >= 7 && osAvx512StateEnabled() && Bit(CPUID(7, 0).ebx, 21);
-
-            case Feature::avx512cd:
-                return basicMax >= 7 && osAvx512StateEnabled() && Bit(CPUID(7, 0).ebx, 28);
-
-            case Feature::avx512bw:
-                return basicMax >= 7 && osAvx512StateEnabled() && Bit(CPUID(7, 0).ebx, 30);
-
-            case Feature::avx512vl:
-                return basicMax >= 7 && osAvx512StateEnabled() && Bit(CPUID(7, 0).ebx, 31);
-
-            case Feature::avx512vbmi:
-                return basicMax >= 7 && osAvx512StateEnabled() && Bit(CPUID(7, 0).ecx, 1);
-
-            case Feature::avx512vbmi2:
-                return basicMax >= 7 && osAvx512StateEnabled() && Bit(CPUID(7, 0).ecx, 6);
-
-            case Feature::avx512vnni:
-                return basicMax >= 7 && osAvx512StateEnabled() && Bit(CPUID(7, 0).ecx, 11);
-
-            case Feature::avx512bitalg:
-                return basicMax >= 7 && osAvx512StateEnabled() && Bit(CPUID(7, 0).ecx, 12);
-
-            case Feature::avx512vpopcntdq:
-                return basicMax >= 7 && osAvx512StateEnabled() && Bit(CPUID(7, 0).ecx, 14);
-
-            case Feature::avx512bf16:
-                return basicMax >= 7 && osAvx512StateEnabled() && Bit(CPUID(7, 1).eax, 5);
-
-            case Feature::avx512fp16:
-                // See: https://cdrdv2-public.intel.com/678970/intel-avx512-fp16.pdf (chapter 2, needs avx512bw)
-                return basicMax >= 7 && osAvx512StateEnabled() && Bit(CPUID(7, 0).eax, 23) && Bit(CPUID(7, 0).ebx, 30);
+            return {static_cast<uint32>(registers[0]), static_cast<uint32>(registers[1]),
+                    static_cast<uint32>(registers[2]), static_cast<uint32>(registers[3])};
         }
 
-        return false;
+        constexpr bool Bit(const uint32 value, const uint32 bit) noexcept {
+            return (value & (uint32{1} << bit)) != 0;
+        }
+
+        struct CpuFeatures {
+            std::array<bool, static_cast<usize>(Feature::count)> features{};
+
+            constexpr bool Has(const Feature feature) const noexcept {
+                return features[static_cast<usize>(feature)];
+            }
+        };
+
+        constexpr CpuFeatures DetectCpuFeatures() noexcept {
+            CpuFeatures result{};
+
+            const CpuIdResult leaf0 = Cpuid(0);
+            const uint32 maxBasicLeaf = leaf0.eax;
+
+            if (maxBasicLeaf < 1)
+                return result;
+
+            const CpuIdResult leaf1 = Cpuid(1);
+
+            // Basic SIMD features.
+            result.features[static_cast<usize>(Feature::mmx)] = Bit(leaf1.edx, 23);
+            result.features[static_cast<usize>(Feature::sse)] = Bit(leaf1.edx, 25);
+            result.features[static_cast<usize>(Feature::sse2)] = Bit(leaf1.edx, 26);
+            result.features[static_cast<usize>(Feature::sse3)] = Bit(leaf1.ecx, 0);
+            result.features[static_cast<usize>(Feature::ssse3)] = Bit(leaf1.ecx, 9);
+            result.features[static_cast<usize>(Feature::sse4_1)] = Bit(leaf1.ecx, 19);
+            result.features[static_cast<usize>(Feature::sse4_2)] = Bit(leaf1.ecx, 20);
+            result.features[static_cast<usize>(Feature::fma)] = Bit(leaf1.ecx, 12);
+
+            const bool cpuAvx = Bit(leaf1.ecx, 28);
+            const bool osxSave = Bit(leaf1.ecx, 27);
+
+            // AVX requires both CPU support and OS support for XMM/YMM state.
+            bool osAvx = false;
+            bool osAvx512 = false;
+
+            if (cpuAvx && osxSave) {
+                const uint64 xcr0 = _xgetbv(0);
+                // XMM + YMM state.
+                osAvx = (xcr0 & 0x6) == 0x6;
+                // Opmask + ZMM_Hi256 + Hi16_ZMM.
+                osAvx512 = osAvx && (xcr0 & 0xE0) == 0xE0;
+            }
+
+            result.features[static_cast<usize>(Feature::avx)] = cpuAvx && osAvx;
+            result.features[static_cast<usize>(Feature::fma)] = Bit(leaf1.ecx, 12) && osAvx;
+
+            // Extended AMD features.
+            const CpuIdResult extendedLeaf0 = Cpuid(0x80000000);
+            const uint32 maxExtendedLeaf = extendedLeaf0.eax;
+
+            if (maxExtendedLeaf >= 0x80000001) {
+                const CpuIdResult leaf80000001 = Cpuid(0x80000001);
+                result.features[static_cast<usize>(Feature::sse4a)] = Bit(leaf80000001.ecx, 6);
+            }
+
+            if (maxBasicLeaf < 7)
+                return result;
+
+            // Structured feature enumeration.
+            const CpuIdResult leaf7 = Cpuid(7, 0);
+
+            result.features[static_cast<usize>(Feature::avx2)] = osAvx && Bit(leaf7.ebx, 5);
+
+            if (!osAvx512)
+                return result;
+
+            result.features[static_cast<usize>(Feature::avx512f)]         = Bit(leaf7.ebx, 16);
+            result.features[static_cast<usize>(Feature::avx512dq)]        = Bit(leaf7.ebx, 17);
+            result.features[static_cast<usize>(Feature::avx512ifma)]      = Bit(leaf7.ebx, 21);
+            result.features[static_cast<usize>(Feature::avx512cd)]        = Bit(leaf7.ebx, 28);
+            result.features[static_cast<usize>(Feature::avx512bw)]        = Bit(leaf7.ebx, 30);
+            result.features[static_cast<usize>(Feature::avx512vl)]        = Bit(leaf7.ebx, 31);
+            result.features[static_cast<usize>(Feature::avx512vbmi)]      = Bit(leaf7.ecx, 1);
+            result.features[static_cast<usize>(Feature::avx512vbmi2)]     = Bit(leaf7.ecx, 6);
+            result.features[static_cast<usize>(Feature::avx512vnni)]      = Bit(leaf7.ecx, 11);
+            result.features[static_cast<usize>(Feature::avx512bitalg)]    = Bit(leaf7.ecx, 12);
+            result.features[static_cast<usize>(Feature::avx512vpopcntdq)] = Bit(leaf7.ecx, 14);
+
+            // Leaf 7 subleaf 1.
+            if (leaf7.eax >= 1) {
+                const CpuIdResult leaf7_1 = Cpuid(7, 1);
+                result.features[static_cast<usize>(Feature::avx512bf16)] = Bit(leaf7_1.eax, 5);
+            }
+
+            // AVX512_FP16 is enumerated by CPUID.07H:EDX[23].
+            result.features[static_cast<usize>(Feature::avx512fp16)] =
+                Bit(leaf7.edx, 23) && Bit(leaf7.ebx, 30); // AVX512BW
+
+            return result;
+        }
+
+        // Detect once, then reuse forever.
+        const CpuFeatures cpuFeatures = DetectCpuFeatures();
+
+    } // namespace detail
+
+    inline bool Has(const Feature feature) noexcept {
+        return detail::cpuFeatures.Has(feature);
     }
 
 #    elif defined(__GNUC__) || defined(__clang__)
 
-    inline bool Has(Feature f) noexcept {
-        switch (f) {
+    inline bool Has(const Feature feature) noexcept {
+        switch (feature) {
             case Feature::mmx:
                 return __builtin_cpu_supports("mmx");
 
@@ -307,9 +301,10 @@ export namespace Nexus::Simd {
             case Feature::avx512fp16:
                 // See: https://cdrdv2-public.intel.com/678970/intel-avx512-fp16.pdf (chapter 2, needs avx512bw)
                 return __builtin_cpu_supports("avx512bw") && __builtin_cpu_supports("avx512fp16");
-        }
 
-        return false;
+            default:
+                return false;
+        }
     }
 
 #    else
