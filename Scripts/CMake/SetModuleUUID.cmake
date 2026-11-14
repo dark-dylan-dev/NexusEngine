@@ -2,11 +2,10 @@
 
 # See: https://discourse.cmake.org/t/cmake-experimental-cxx-import-std-value-history-and-state/15712/3
 function(setModuleID)
-    set(MODULES_EXPERIMENTAL ON)
+    set(NEEDS_IMPORT_STD_GATE ON)
 
     if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.5.0")
-        set(MODULES_EXPERIMENTAL OFF)
-        message(STATUS "C++ module location: ${CMAKE_CXX_STDLIB_MODULES_JSON}")
+        set(NEEDS_IMPORT_STD_GATE OFF)
     elseif(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4.0")
         set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
             "f35a9ac6-8463-4d38-8eec-5d6008153e7d"
@@ -33,25 +32,25 @@ function(setModuleID)
                 "a9e1cf81-9932-4810-974b-6eccaf14e457"
                 CACHE STRING "" FORCE
             )
-        elseif(CMAKE_VERSION VERSION_LESS "4.3.0")
+        else() # 4.0.3 <= version < 4.3.0
             set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
                 "d0edc3af-4c50-42ea-a356-e2862fe7a444"
                 CACHE STRING "" FORCE
             )
-        else()
-            message(FATAL_ERROR "Unsupported CMake version ${CMAKE_VERSION}")
         endif()
     else()
-        message(FATAL_ERROR "CMake CXX_MODULES not supported for version ${CMAKE_VERSION}")
+        message(FATAL_ERROR "import std requires CMake 3.30 or newer (found ${CMAKE_VERSION})")
     endif()
 
-    if(MODULES_EXPERIMENTAL)
+    if(NEEDS_IMPORT_STD_GATE)
         set(CMAKE_CXX_SCAN_FOR_MODULES ON CACHE BOOL "" FORCE)
-        set(CMAKE_EXPERIMENTAL_CXX_MODULE_STD ON CACHE BOOL "" FORCE)
         set(CMAKE_CXX_MODULE_STD ON CACHE BOOL "" FORCE)
-        message(STATUS "C++ modules enabled (CMake ${CMAKE_VERSION}, UUID: ${CMAKE_EXPERIMENTAL_CXX_IMPORT_STD})")
+        message(STATUS "import std enabled via experimental gate (CMake ${CMAKE_VERSION}, UUID: ${CMAKE_EXPERIMENTAL_CXX_IMPORT_STD})")
     else()
-        message(STATUS "C++ modules enabled (CMake ${CMAKE_VERSION})")
+        message(STATUS "import std enabled (CMake ${CMAKE_VERSION})")
+        if(CMAKE_CXX_STDLIB_MODULES_JSON)
+            message(STATUS "C++ stdlib modules metadata: ${CMAKE_CXX_STDLIB_MODULES_JSON}")
+        endif()
     endif()
 
 endfunction()
