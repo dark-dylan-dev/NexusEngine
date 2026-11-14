@@ -2,10 +2,12 @@
 
 # See: https://discourse.cmake.org/t/cmake-experimental-cxx-import-std-value-history-and-state/15712/3
 function(setModuleID)
-    set(CMAKE_CXX_SCAN_FOR_MODULES ON CACHE BOOL "" FORCE)
-    set(CMAKE_EXPERIMENTAL_CXX_MODULE_STD ON CACHE BOOL "" FORCE)
+    set(MODULES_EXPERIMENTAL ON)
 
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4.0")
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.5.0")
+        set(MODULES_EXPERIMENTAL OFF)
+        message(STATUS "C++ module location: ${CMAKE_CXX_STDLIB_MODULES_JSON}")
+    elseif(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4.0")
         set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
             "f35a9ac6-8463-4d38-8eec-5d6008153e7d"
             CACHE STRING "" FORCE
@@ -43,7 +45,13 @@ function(setModuleID)
         message(FATAL_ERROR "CMake CXX_MODULES not supported for version ${CMAKE_VERSION}")
     endif()
 
-    set(CMAKE_CXX_MODULE_STD ON CACHE BOOL "" FORCE)
+    if(MODULES_EXPERIMENTAL)
+        set(CMAKE_CXX_SCAN_FOR_MODULES ON CACHE BOOL "" FORCE)
+        set(CMAKE_EXPERIMENTAL_CXX_MODULE_STD ON CACHE BOOL "" FORCE)
+        set(CMAKE_CXX_MODULE_STD ON CACHE BOOL "" FORCE)
+        message(STATUS "C++ modules enabled (CMake ${CMAKE_VERSION}, UUID: ${CMAKE_EXPERIMENTAL_CXX_IMPORT_STD})")
+    else()
+        message(STATUS "C++ modules enabled (CMake ${CMAKE_VERSION})")
+    endif()
 
-    message(STATUS "C++ modules enabled (CMake ${CMAKE_VERSION}, UUID: ${CMAKE_EXPERIMENTAL_CXX_IMPORT_STD})")
 endfunction()

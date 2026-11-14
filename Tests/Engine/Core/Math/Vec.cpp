@@ -5,6 +5,8 @@
 import NE.Engine.Core.Types;
 import NE.Engine.Math.Vec;
 
+import std;
+
 using namespace Nexus;
 
 // =========================================================================
