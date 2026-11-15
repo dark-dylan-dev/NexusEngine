@@ -28,8 +28,7 @@ namespace Nexus::RHI {
         imageInfo.setUsage(ConvertTextureUsageToVulkan(desc.Usage));
         imageInfo.setFlags(desc.IsCubeMap ? vk::ImageCreateFlagBits::eCubeCompatible : vk::ImageCreateFlags{});
 
-        vma::AllocationCreateInfo allocInfo;
-        std::memset(&allocInfo, 0, sizeof(allocInfo));
+        vma::AllocationCreateInfo allocInfo = {};
         allocInfo.usage = vma::MemoryUsage::eGpuOnly;
 
         vk::Result result = allocator.createImage(&imageInfo, &allocInfo, &m_Image, &m_Allocation, &m_AllocationInfo);
