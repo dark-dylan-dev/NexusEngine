@@ -191,16 +191,16 @@ export namespace Nexus::Simd {
             if (!osAvx512)
                 return result;
 
-            result.features[static_cast<usize>(Feature::avx512f)]         = Bit(leaf7.ebx, 16);
-            result.features[static_cast<usize>(Feature::avx512dq)]        = Bit(leaf7.ebx, 17);
-            result.features[static_cast<usize>(Feature::avx512ifma)]      = Bit(leaf7.ebx, 21);
-            result.features[static_cast<usize>(Feature::avx512cd)]        = Bit(leaf7.ebx, 28);
-            result.features[static_cast<usize>(Feature::avx512bw)]        = Bit(leaf7.ebx, 30);
-            result.features[static_cast<usize>(Feature::avx512vl)]        = Bit(leaf7.ebx, 31);
-            result.features[static_cast<usize>(Feature::avx512vbmi)]      = Bit(leaf7.ecx, 1);
-            result.features[static_cast<usize>(Feature::avx512vbmi2)]     = Bit(leaf7.ecx, 6);
-            result.features[static_cast<usize>(Feature::avx512vnni)]      = Bit(leaf7.ecx, 11);
-            result.features[static_cast<usize>(Feature::avx512bitalg)]    = Bit(leaf7.ecx, 12);
+            result.features[static_cast<usize>(Feature::avx512f)] = Bit(leaf7.ebx, 16);
+            result.features[static_cast<usize>(Feature::avx512dq)] = Bit(leaf7.ebx, 17);
+            result.features[static_cast<usize>(Feature::avx512ifma)] = Bit(leaf7.ebx, 21);
+            result.features[static_cast<usize>(Feature::avx512cd)] = Bit(leaf7.ebx, 28);
+            result.features[static_cast<usize>(Feature::avx512bw)] = Bit(leaf7.ebx, 30);
+            result.features[static_cast<usize>(Feature::avx512vl)] = Bit(leaf7.ebx, 31);
+            result.features[static_cast<usize>(Feature::avx512vbmi)] = Bit(leaf7.ecx, 1);
+            result.features[static_cast<usize>(Feature::avx512vbmi2)] = Bit(leaf7.ecx, 6);
+            result.features[static_cast<usize>(Feature::avx512vnni)] = Bit(leaf7.ecx, 11);
+            result.features[static_cast<usize>(Feature::avx512bitalg)] = Bit(leaf7.ecx, 12);
             result.features[static_cast<usize>(Feature::avx512vpopcntdq)] = Bit(leaf7.ecx, 14);
 
             // Leaf 7 subleaf 1.

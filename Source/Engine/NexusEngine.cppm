@@ -17,6 +17,8 @@ export import NE.Engine.Core.Window;
 export import NE.Engine.Math.Mat;
 export import NE.Engine.Math.Quaternion;
 export import NE.Engine.Math.Vec;
+export import NE.Engine.Math.Simd.Config;
+export import NE.Engine.Math.Simd.Traits;
 
 // Network
 export import NE.Engine.Network.Common.NetworkAddress;
