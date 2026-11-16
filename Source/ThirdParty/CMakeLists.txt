@@ -3,6 +3,7 @@
 add_library(NexusThirdParty INTERFACE)
 
 add_subdirectory(CppTrace)
+add_subdirectory(Discord)
 add_subdirectory(GLFW)
 add_subdirectory(GLM)
 add_subdirectory(ImGui)

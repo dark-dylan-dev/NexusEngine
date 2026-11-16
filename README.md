@@ -43,7 +43,9 @@ apt-get update && apt-get install \
     libxkbcommon-dev \
     wayland-protocols \
     doxygen \
-    graphviz
+    graphviz \
+    libasound2-dev \
+    libpulse-dev
 ```
 
 ## Build
