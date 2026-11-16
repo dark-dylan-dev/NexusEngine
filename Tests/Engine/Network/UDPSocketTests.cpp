@@ -25,23 +25,12 @@ namespace {
         return predicate();
     }
 
-    Nexus::uint16 NextTestPort() {
-        static std::atomic<Nexus::uint16> counter{54000};
-        return counter.fetch_add(1);
-    }
-
     class UDPSocketTest : public ::testing::Test {};
 } // namespace
 
 TEST_F(UDPSocketTest, DefaultConstructedIsNotOpen) {
     const UDPSocket socket;
     EXPECT_FALSE(socket.IsOpen());
-}
-
-TEST_F(UDPSocketTest, BindSucceedsAndOpensSocket) {
-    UDPSocket socket;
-    EXPECT_TRUE(socket.Bind(NextTestPort()));
-    EXPECT_TRUE(socket.IsOpen());
 }
 
 TEST_F(UDPSocketTest, BindToEphemeralPortSucceeds) {
@@ -52,7 +41,7 @@ TEST_F(UDPSocketTest, BindToEphemeralPortSucceeds) {
 
 TEST_F(UDPSocketTest, CloseInvalidatesSocket) {
     UDPSocket socket;
-    ASSERT_TRUE(socket.Bind(NextTestPort()));
+    ASSERT_TRUE(socket.Bind(0));
 
     socket.Close();
     EXPECT_FALSE(socket.IsOpen());
@@ -77,16 +66,14 @@ TEST_F(UDPSocketTest, ReceiveOnUnboundSocketFailsWithInvalidOperation) {
 }
 
 TEST_F(UDPSocketTest, SendThenReceiveRoundTripsPayload) {
-    const Nexus::uint16 serverPort = NextTestPort();
-
     UDPSocket server;
-    ASSERT_TRUE(server.Bind(serverPort));
+    ASSERT_TRUE(server.Bind(0));
 
     UDPSocket client;
     ASSERT_TRUE(client.Bind(0));
 
     const std::array<Nexus::byte, 4> payload{Nexus::byte{'p'}, Nexus::byte{'i'}, Nexus::byte{'n'}, Nexus::byte{'g'}};
-    EXPECT_TRUE(client.Send(NetworkAddress("127.0.0.1", serverPort), payload));
+    EXPECT_TRUE(client.Send(NetworkAddress("127.0.0.1", server.GetBoundPort()), payload));
 
     std::optional<UDPMessage> message;
     const bool got = WaitUntil([&] {
@@ -103,7 +90,7 @@ TEST_F(UDPSocketTest, SendThenReceiveRoundTripsPayload) {
 
 TEST_F(UDPSocketTest, ReceiveWithNoDatagramReturnsNulloptWithoutError) {
     UDPSocket socket;
-    ASSERT_TRUE(socket.Bind(NextTestPort()));
+    ASSERT_TRUE(socket.Bind(0));
 
     std::optional<NetworkError> error;
     const auto message = socket.Receive(error);
@@ -116,25 +103,26 @@ TEST_F(UDPSocketTest, ReceiveWithNoDatagramReturnsNulloptWithoutError) {
 
 TEST_F(UDPSocketTest, SendPayloadLargerThanMaxUdpPayloadFails) {
     UDPSocket socket;
-    ASSERT_TRUE(socket.Bind(NextTestPort()));
+    ASSERT_TRUE(socket.Bind(0));
+
+    UDPSocket client;
+    ASSERT_TRUE(client.Bind(0));
 
     const std::vector<Nexus::byte> oversized(MAX_UDP_PAYLOAD + 1, Nexus::byte{0});
-    EXPECT_FALSE(socket.Send(NetworkAddress("127.0.0.1", NextTestPort()), oversized));
+    EXPECT_FALSE(socket.Send(NetworkAddress("127.0.0.1", client.GetBoundPort()), oversized));
 }
 
 TEST_F(UDPSocketTest, MultipleDatagramsAreReceivedInSeparateCalls) {
-    const Nexus::uint16 serverPort = NextTestPort();
-
     UDPSocket server;
-    ASSERT_TRUE(server.Bind(serverPort));
+    ASSERT_TRUE(server.Bind(0));
 
     UDPSocket client;
     ASSERT_TRUE(client.Bind(0));
 
     const std::array<Nexus::byte, 1> first{Nexus::byte{1}};
     const std::array<Nexus::byte, 1> second{Nexus::byte{2}};
-    EXPECT_TRUE(client.Send(NetworkAddress("127.0.0.1", serverPort), first));
-    EXPECT_TRUE(client.Send(NetworkAddress("127.0.0.1", serverPort), second));
+    EXPECT_TRUE(client.Send(NetworkAddress("127.0.0.1", server.GetBoundPort()), first));
+    EXPECT_TRUE(client.Send(NetworkAddress("127.0.0.1", server.GetBoundPort()), second));
 
     std::vector<Nexus::byte> receivedValues;
     WaitUntil([&] {
@@ -159,9 +147,9 @@ TEST_F(UDPSocketTest, IsMoveOnly) {
 
 TEST_F(UDPSocketTest, RebindClosesPreviousSocket) {
     UDPSocket socket;
-    ASSERT_TRUE(socket.Bind(NextTestPort()));
+    ASSERT_TRUE(socket.Bind(0));
     ASSERT_TRUE(socket.IsOpen());
 
-    ASSERT_TRUE(socket.Bind(NextTestPort()));
+    ASSERT_TRUE(socket.Bind(0));
     EXPECT_TRUE(socket.IsOpen());
 }

@@ -54,6 +54,7 @@ namespace Nexus::Network::Internal {
     [[nodiscard]] bool RawSetReuseAddr(RawHandle handle);
 
     [[nodiscard]] bool RawBind(RawHandle handle, unsigned short port);
+    [[nodiscard]] unsigned short RawGetPort(RawHandle handle);
     [[nodiscard]] bool RawListen(RawHandle handle, int backlog);
     [[nodiscard]] RawHandle RawAccept(RawHandle handle);
 

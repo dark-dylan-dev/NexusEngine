@@ -28,11 +28,6 @@ namespace {
         return predicate();
     }
 
-    Nexus::uint16 NextTestPort() {
-        static std::atomic<Nexus::uint16> counter{55000};
-        return counter.fetch_add(1);
-    }
-
     // A raw-Socket "server" used as the peer for NetworkManager's TCP side,
     // so NetworkManager is tested in isolation rather than against TCPServer.
     struct RawServer {
@@ -42,12 +37,12 @@ namespace {
 
         static std::optional<RawServer> Create() {
             RawServer result;
-            result.port = NextTestPort();
             result.listener = Socket(SocketType::TCP);
-            if (!result.listener.IsValid() || !result.listener.SetNonBlocking(true) ||
-                !result.listener.Bind(result.port) || !result.listener.Listen()) {
+            if (!result.listener.IsValid() || !result.listener.SetNonBlocking(true) || !result.listener.Bind(0) ||
+                !result.listener.Listen()) {
                 return std::nullopt;
             }
+            result.port = result.listener.GetBoundPort();
             return result;
         }
 

@@ -13,6 +13,6 @@ target_link_libraries(NexusEngine PRIVATE NexusThirdParty)
 target_link_libraries(NexusEditor PRIVATE NexusEngine)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_link_libraries(NexusEngine PRIVATE "-lstdc++exp")
-    target_link_libraries(NexusEditor PRIVATE "-lstdc++exp")
+    target_link_libraries(NexusEngine PRIVATE stdc++exp)
+    target_link_libraries(NexusEditor PRIVATE stdc++exp)
 endif()

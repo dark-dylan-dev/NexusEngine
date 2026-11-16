@@ -14,9 +14,6 @@ import vulkan;
 #include "vk_mem_alloc.hpp"
 #include "vk_mem_alloc_raii.hpp"
 
-#if !defined(__GNUC__)
-module : private;
-#endif
 namespace VULKAN_HPP_NAMESPACE {
   // This is needed for template specializations to be visible outside the module when importing vulkan (is this a MSVC bug?).
   template<> struct FlagTraits<VMA_HPP_NAMESPACE::AllocatorCreateFlagBits>;

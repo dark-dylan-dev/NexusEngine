@@ -25,12 +25,6 @@ namespace {
         return predicate();
     }
 
-    Nexus::uint16 NextTestPort() {
-        // avoids collisions on ports that are still active/waiting to be closed
-        static std::atomic<Nexus::uint16> counter{51000};
-        return counter.fetch_add(1);
-    }
-
     class SocketTest : public ::testing::Test {};
 } // namespace
 
@@ -148,35 +142,29 @@ TEST_F(SocketTest, BindThenListenSucceeds) {
     Socket listener(SocketType::TCP);
     ASSERT_TRUE(listener.IsValid());
     ASSERT_TRUE(listener.SetNonBlocking(true));
-
-    const Nexus::uint16 port = NextTestPort();
-    ASSERT_TRUE(listener.Bind(port));
+    ASSERT_TRUE(listener.Bind(0));
     EXPECT_TRUE(listener.Listen());
 }
 
 TEST_F(SocketTest, AcceptOnListenerWithNoPendingConnectionReturnsNullopt) {
     Socket listener(SocketType::TCP);
     ASSERT_TRUE(listener.SetNonBlocking(true));
-    const Nexus::uint16 port = NextTestPort();
-    ASSERT_TRUE(listener.Bind(port));
+    ASSERT_TRUE(listener.Bind(0));
     ASSERT_TRUE(listener.Listen());
-
     EXPECT_FALSE(listener.Accept().has_value());
 }
 
 TEST_F(SocketTest, ClientCanConnectAndServerCanAccept) {
-    const Nexus::uint16 port = NextTestPort();
-
     Socket listener(SocketType::TCP);
     ASSERT_TRUE(listener.SetNonBlocking(true));
-    ASSERT_TRUE(listener.Bind(port));
+    ASSERT_TRUE(listener.Bind(0));
     ASSERT_TRUE(listener.Listen());
 
     Socket client(SocketType::TCP);
     ASSERT_TRUE(client.SetNonBlocking(true));
 
     std::optional<NetworkError> connectError;
-    EXPECT_TRUE(client.Connect(NetworkAddress("127.0.0.1", port), connectError));
+    EXPECT_TRUE(client.Connect(NetworkAddress("127.0.0.1", listener.GetBoundPort()), connectError));
 
     std::optional<Socket> accepted;
     const bool got = WaitUntil([&] {
@@ -191,18 +179,16 @@ TEST_F(SocketTest, ClientCanConnectAndServerCanAccept) {
 }
 
 TEST_F(SocketTest, ConnectToNonBlockingSocketReportsConnectionInProgressOrSucceeds) {
-    const Nexus::uint16 port = NextTestPort();
-
     Socket listener(SocketType::TCP);
     ASSERT_TRUE(listener.SetNonBlocking(true));
-    ASSERT_TRUE(listener.Bind(port));
+    ASSERT_TRUE(listener.Bind(0));
     ASSERT_TRUE(listener.Listen());
 
     Socket client(SocketType::TCP);
     ASSERT_TRUE(client.SetNonBlocking(true));
 
     std::optional<NetworkError> error;
-    const bool started = client.Connect(NetworkAddress("127.0.0.1", port), error);
+    const bool started = client.Connect(NetworkAddress("127.0.0.1", listener.GetBoundPort()), error);
 
     EXPECT_TRUE(started);
     if (error.has_value()) {
@@ -211,17 +197,15 @@ TEST_F(SocketTest, ConnectToNonBlockingSocketReportsConnectionInProgressOrSuccee
 }
 
 TEST_F(SocketTest, CompleteConnectEventuallySucceeds) {
-    const Nexus::uint16 port = NextTestPort();
-
     Socket listener(SocketType::TCP);
     ASSERT_TRUE(listener.SetNonBlocking(true));
-    ASSERT_TRUE(listener.Bind(port));
+    ASSERT_TRUE(listener.Bind(0));
     ASSERT_TRUE(listener.Listen());
 
     Socket client(SocketType::TCP);
     ASSERT_TRUE(client.SetNonBlocking(true));
     std::optional<NetworkError> connectError;
-    ASSERT_TRUE(client.Connect(NetworkAddress("127.0.0.1", port), connectError));
+    ASSERT_TRUE(client.Connect(NetworkAddress("127.0.0.1", listener.GetBoundPort()), connectError));
 
     const bool completed = WaitUntil([&] {
         static_cast<void>(listener.Accept());
@@ -237,7 +221,7 @@ TEST_F(SocketTest, ConnectToClosedPortFails) {
     ASSERT_TRUE(client.SetNonBlocking(true));
 
     // Nothing is listening on this port.
-    const Nexus::uint16 port = NextTestPort();
+    const Nexus::uint16 port = 0;
     std::optional<NetworkError> connectError;
     const bool started = client.Connect(NetworkAddress("127.0.0.1", port), connectError);
 
@@ -267,9 +251,9 @@ namespace {
         Socket server;
     };
 
-    std::optional<ConnectedPair> MakeConnectedPair(Nexus::uint16 port) {
+    std::optional<ConnectedPair> MakeConnectedPair() {
         Socket listener(SocketType::TCP);
-        if (!listener.SetNonBlocking(true) || !listener.Bind(port) || !listener.Listen()) {
+        if (!listener.SetNonBlocking(true) || !listener.Bind(0) || !listener.Listen()) {
             return std::nullopt;
         }
 
@@ -279,7 +263,7 @@ namespace {
         }
 
         std::optional<NetworkError> connectError;
-        if (!client.Connect(NetworkAddress("127.0.0.1", port), connectError)) {
+        if (!client.Connect(NetworkAddress("127.0.0.1", listener.GetBoundPort()), connectError)) {
             return std::nullopt;
         }
 
@@ -304,7 +288,7 @@ namespace {
 } // namespace
 
 TEST_F(SocketTest, SendThenReceiveDeliversData) {
-    auto pair = MakeConnectedPair(NextTestPort());
+    auto pair = MakeConnectedPair();
     ASSERT_TRUE(pair.has_value());
 
     const std::array<Nexus::byte, 5> payload{Nexus::byte{'h'}, Nexus::byte{'e'}, Nexus::byte{'l'}, Nexus::byte{'l'},
@@ -328,7 +312,7 @@ TEST_F(SocketTest, SendThenReceiveDeliversData) {
 }
 
 TEST_F(SocketTest, ReceiveOnSocketWithNoDataReturnsWouldBlock) {
-    auto pair = MakeConnectedPair(NextTestPort());
+    auto pair = MakeConnectedPair();
     ASSERT_TRUE(pair.has_value());
 
     std::array<Nexus::byte, 64> buffer{};
@@ -341,7 +325,7 @@ TEST_F(SocketTest, ReceiveOnSocketWithNoDataReturnsWouldBlock) {
 }
 
 TEST_F(SocketTest, ReceiveAfterPeerClosesReportsConnectionClosed) {
-    auto pair = MakeConnectedPair(NextTestPort());
+    auto pair = MakeConnectedPair();
     ASSERT_TRUE(pair.has_value());
 
     pair->client.Close();
@@ -358,7 +342,7 @@ TEST_F(SocketTest, ReceiveAfterPeerClosesReportsConnectionClosed) {
 }
 
 TEST_F(SocketTest, SendEmptySpanSucceedsWithZeroBytes) {
-    auto pair = MakeConnectedPair(NextTestPort());
+    auto pair = MakeConnectedPair();
     ASSERT_TRUE(pair.has_value());
 
     std::optional<NetworkError> error;
@@ -374,15 +358,13 @@ TEST_F(SocketTest, SendEmptySpanSucceedsWithZeroBytes) {
 TEST_F(SocketTest, UdpBindSucceeds) {
     Socket udp(SocketType::UDP);
     ASSERT_TRUE(udp.SetNonBlocking(true));
-    EXPECT_TRUE(udp.Bind(NextTestPort()));
+    EXPECT_TRUE(udp.Bind(0));
 }
 
 TEST_F(SocketTest, UdpSendToThenReceiveFromDeliversDatagram) {
-    const Nexus::uint16 serverPort = NextTestPort();
-
     Socket server(SocketType::UDP);
     ASSERT_TRUE(server.SetNonBlocking(true));
-    ASSERT_TRUE(server.Bind(serverPort));
+    ASSERT_TRUE(server.Bind(0));
 
     Socket client(SocketType::UDP);
     ASSERT_TRUE(client.SetNonBlocking(true));
@@ -390,7 +372,7 @@ TEST_F(SocketTest, UdpSendToThenReceiveFromDeliversDatagram) {
 
     const std::array<Nexus::byte, 3> payload{Nexus::byte{1}, Nexus::byte{2}, Nexus::byte{3}};
     std::optional<NetworkError> sendError;
-    const auto sent = client.SendTo(NetworkAddress("127.0.0.1", serverPort), payload, sendError);
+    const auto sent = client.SendTo(NetworkAddress("127.0.0.1", server.GetBoundPort()), payload, sendError);
     ASSERT_TRUE(sent.has_value());
     EXPECT_EQ(*sent, payload.size());
 
@@ -412,7 +394,7 @@ TEST_F(SocketTest, UdpSendToThenReceiveFromDeliversDatagram) {
 TEST_F(SocketTest, UdpReceiveWithNoDataReturnsWouldBlock) {
     Socket udp(SocketType::UDP);
     ASSERT_TRUE(udp.SetNonBlocking(true));
-    ASSERT_TRUE(udp.Bind(NextTestPort()));
+    ASSERT_TRUE(udp.Bind(0));
 
     std::array<Nexus::byte, 64> buffer{};
     NetworkAddress sender;
@@ -425,20 +407,17 @@ TEST_F(SocketTest, UdpReceiveWithNoDataReturnsWouldBlock) {
 }
 
 TEST_F(SocketTest, UdpSenderAddressMatchesClientBoundPort) {
-    const Nexus::uint16 serverPort = NextTestPort();
-    const Nexus::uint16 clientPort = NextTestPort();
-
     Socket server(SocketType::UDP);
     ASSERT_TRUE(server.SetNonBlocking(true));
-    ASSERT_TRUE(server.Bind(serverPort));
+    ASSERT_TRUE(server.Bind(0));
 
     Socket client(SocketType::UDP);
     ASSERT_TRUE(client.SetNonBlocking(true));
-    ASSERT_TRUE(client.Bind(clientPort));
+    ASSERT_TRUE(client.Bind(0));
 
     const std::array<Nexus::byte, 1> payload{Nexus::byte{7}};
     std::optional<NetworkError> sendError;
-    ASSERT_TRUE(client.SendTo(NetworkAddress("127.0.0.1", serverPort), payload, sendError).has_value());
+    ASSERT_TRUE(client.SendTo(NetworkAddress("127.0.0.1", server.GetBoundPort()), payload, sendError).has_value());
 
     std::array<Nexus::byte, 64> buffer{};
     NetworkAddress sender;
@@ -450,5 +429,5 @@ TEST_F(SocketTest, UdpSenderAddressMatchesClientBoundPort) {
     });
 
     ASSERT_TRUE(got);
-    EXPECT_EQ(sender.Port(), clientPort);
+    EXPECT_EQ(sender.Port(), client.GetBoundPort());
 }

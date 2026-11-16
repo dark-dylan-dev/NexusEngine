@@ -154,7 +154,12 @@ namespace Nexus::Network {
         }
 
         static_cast<void>(RawSetReuseAddr(m_handle));
-        return RawBind(m_handle, port);
+        m_port = port;
+        return RawBind(m_handle, m_port);
+    }
+
+    uint16 Socket::GetBoundPort() const {
+        return RawGetPort(m_handle);
     }
 
     bool Socket::Connect(const NetworkAddress& address, std::optional<NetworkError>& outError) {
