@@ -20,6 +20,7 @@ endif()
 add_custom_command(
         TARGET NexusEditor POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${DISCORD_SHARED_LIB}"
-            $<TARGET_FILE_DIR:NexusEditor>
+        $<TARGET_FILE:DiscordPartnerSDK>
+        $<TARGET_FILE_DIR:NexusEditor>
+        VERBATIM
 )
