@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: MIT
 
+/// @file World.cpp
+/// @brief Implementation unit of NE.Engine.ECS.World (documented in World.cppm).
+
 module NE.Engine.ECS.World;
 
 import NE.Engine.Core.Types;
@@ -11,6 +14,7 @@ namespace Nexus::ECS {
     Entity World::CreateEntity() {
         uint32 index;
 
+        // Recycle the most recently freed slot first; its generation was already bumped on destroy.
         if (!m_freeIndices.empty()) {
             index = m_freeIndices.back();
             m_freeIndices.pop_back();
@@ -33,6 +37,7 @@ namespace Nexus::ECS {
         if (!IsAlive(entity))
             return;
 
+        // Strip every component, then invalidate outstanding handles by bumping the generation.
         m_registry.RemoveEntity(entity);
 
         m_alive[entity.index] = 0;
@@ -46,6 +51,18 @@ namespace Nexus::ECS {
     }
 
     void World::Clear() {
+        // Clear all pools, then rebuild the free list (highest index first so index 1 is reused first).
         m_registry.Clear();
+
+        // Invalidates every live handle
+        m_freeIndices.clear();
+        m_freeIndices.reserve(m_nextIndex - 1);
+        for (uint32 i = m_nextIndex - 1; i >= 1; --i) {
+            if (m_alive[i]) {
+                m_alive[i] = 0;
+                ++m_generations[i];
+            }
+            m_freeIndices.push_back(i);
+        }
     }
 } // namespace Nexus::ECS
