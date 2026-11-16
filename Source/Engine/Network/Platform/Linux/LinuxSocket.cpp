@@ -127,6 +127,10 @@ namespace Nexus::Network {
         return RawBind(m_handle, port);
     }
 
+    uint16 Socket::GetBoundPort() const {
+        return RawGetPort(m_handle);
+    }
+
     bool Socket::Connect(const NetworkAddress& address, std::optional<NetworkError>& outError) {
         if (!IsValid() || m_type != SocketType::TCP) {
             SetError(outError, NetworkErrorCode::InvalidOperation, "Connect requires a valid TCP socket");

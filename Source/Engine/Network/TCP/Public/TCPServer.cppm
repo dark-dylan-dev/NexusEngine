@@ -32,11 +32,14 @@ export namespace Nexus::Network {
 
         void Broadcast(std::span<const byte> framedData);
 
+        uint16 GetBoundPort() const;
+
         [[nodiscard]] usize ClientCount() const noexcept;
 
     private:
         Socket m_listenSocket;
         std::unordered_map<ClientId, TCPClient> m_clients;
         ClientId m_nextClientId = 1;
+        uint16 m_boundPort = 0;
     };
 } // namespace Nexus::Network

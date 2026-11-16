@@ -25,6 +25,10 @@ namespace Nexus::Network {
         return true;
     }
 
+    uint16 UDPSocket::GetBoundPort() const {
+        return m_socket.GetBoundPort();
+    }
+
     void UDPSocket::Close() {
         m_socket.Close();
     }

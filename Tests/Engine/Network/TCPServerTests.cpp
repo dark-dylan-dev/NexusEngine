@@ -28,11 +28,6 @@ namespace {
         return predicate();
     }
 
-    Nexus::uint16 NextTestPort() {
-        static std::atomic<Nexus::uint16> counter{53000};
-        return counter.fetch_add(1);
-    }
-
     std::optional<Socket> ConnectRawClient(Nexus::uint16 port) {
         Socket client(SocketType::TCP);
         if (!client.IsValid() || !client.SetNonBlocking(true)) {
@@ -64,27 +59,26 @@ namespace {
 
 TEST_F(TCPServerTest, ListenSucceeds) {
     TCPServer server;
-    EXPECT_TRUE(server.Listen(NextTestPort()));
+    EXPECT_TRUE(server.Listen(0));
 }
 
 TEST_F(TCPServerTest, ClientCountStartsAtZero) {
     TCPServer server;
-    ASSERT_TRUE(server.Listen(NextTestPort()));
+    ASSERT_TRUE(server.Listen(0));
     EXPECT_EQ(server.ClientCount(), 0u);
 }
 
 TEST_F(TCPServerTest, AcceptPendingWithNoConnectionsReturnsEmpty) {
     TCPServer server;
-    ASSERT_TRUE(server.Listen(NextTestPort()));
+    ASSERT_TRUE(server.Listen(0));
     EXPECT_TRUE(server.AcceptPending().empty());
 }
 
 TEST_F(TCPServerTest, AcceptsIncomingConnection) {
     TCPServer server;
-    const Nexus::uint16 port = NextTestPort();
-    ASSERT_TRUE(server.Listen(port));
+    ASSERT_TRUE(server.Listen(0));
 
-    auto client = ConnectRawClient(port);
+    auto client = ConnectRawClient(server.GetBoundPort());
     ASSERT_TRUE(client.has_value());
 
     std::vector<ClientId> accepted;
@@ -101,10 +95,9 @@ TEST_F(TCPServerTest, AcceptsIncomingConnection) {
 
 TEST_F(TCPServerTest, ClientIdsAreUniqueAndIncrementing) {
     TCPServer server;
-    const Nexus::uint16 port = NextTestPort();
-    ASSERT_TRUE(server.Listen(port));
+    ASSERT_TRUE(server.Listen(0));
 
-    auto firstClient = ConnectRawClient(port);
+    auto firstClient = ConnectRawClient(server.GetBoundPort());
     ASSERT_TRUE(firstClient.has_value());
     std::vector<ClientId> firstIds;
     WaitUntil([&] {
@@ -114,7 +107,7 @@ TEST_F(TCPServerTest, ClientIdsAreUniqueAndIncrementing) {
     });
     ASSERT_EQ(firstIds.size(), 1u);
 
-    auto secondClient = ConnectRawClient(port);
+    auto secondClient = ConnectRawClient(server.GetBoundPort());
     ASSERT_TRUE(secondClient.has_value());
     std::vector<ClientId> secondIds;
     WaitUntil([&] {
@@ -130,10 +123,9 @@ TEST_F(TCPServerTest, ClientIdsAreUniqueAndIncrementing) {
 
 TEST_F(TCPServerTest, PollAllReturnsFramesSentByClient) {
     TCPServer server;
-    const Nexus::uint16 port = NextTestPort();
-    ASSERT_TRUE(server.Listen(port));
+    ASSERT_TRUE(server.Listen(0));
 
-    auto client = ConnectRawClient(port);
+    auto client = ConnectRawClient(server.GetBoundPort());
     ASSERT_TRUE(client.has_value());
 
     ClientId id = 0;
@@ -164,10 +156,9 @@ TEST_F(TCPServerTest, PollAllReturnsFramesSentByClient) {
 
 TEST_F(TCPServerTest, SendToDeliversFrameToCorrectClient) {
     TCPServer server;
-    const Nexus::uint16 port = NextTestPort();
-    ASSERT_TRUE(server.Listen(port));
+    ASSERT_TRUE(server.Listen(0));
 
-    auto client = ConnectRawClient(port);
+    auto client = ConnectRawClient(server.GetBoundPort());
     ASSERT_TRUE(client.has_value());
     ASSERT_TRUE(client->SetNonBlocking(true));
 
@@ -199,7 +190,7 @@ TEST_F(TCPServerTest, SendToDeliversFrameToCorrectClient) {
 
 TEST_F(TCPServerTest, SendToUnknownClientIdFails) {
     TCPServer server;
-    ASSERT_TRUE(server.Listen(NextTestPort()));
+    ASSERT_TRUE(server.Listen(0));
 
     const auto frame = BuildFrame("nobody home");
     EXPECT_FALSE(server.SendTo(999, frame));
@@ -207,11 +198,10 @@ TEST_F(TCPServerTest, SendToUnknownClientIdFails) {
 
 TEST_F(TCPServerTest, BroadcastReachesAllConnectedClients) {
     TCPServer server;
-    const Nexus::uint16 port = NextTestPort();
-    ASSERT_TRUE(server.Listen(port));
+    ASSERT_TRUE(server.Listen(0));
 
-    auto clientA = ConnectRawClient(port);
-    auto clientB = ConnectRawClient(port);
+    auto clientA = ConnectRawClient(server.GetBoundPort());
+    auto clientB = ConnectRawClient(server.GetBoundPort());
     ASSERT_TRUE(clientA.has_value());
     ASSERT_TRUE(clientB.has_value());
     ASSERT_TRUE(clientA->SetNonBlocking(true));
@@ -250,10 +240,9 @@ TEST_F(TCPServerTest, BroadcastReachesAllConnectedClients) {
 
 TEST_F(TCPServerTest, DisconnectedClientIsRemovedOnPollAll) {
     TCPServer server;
-    const Nexus::uint16 port = NextTestPort();
-    ASSERT_TRUE(server.Listen(port));
+    ASSERT_TRUE(server.Listen(0));
 
-    auto client = ConnectRawClient(port);
+    auto client = ConnectRawClient(server.GetBoundPort());
     ASSERT_TRUE(client.has_value());
 
     WaitUntil([&] {
@@ -274,10 +263,9 @@ TEST_F(TCPServerTest, DisconnectedClientIsRemovedOnPollAll) {
 
 TEST_F(TCPServerTest, StopClearsClientsAndListenSocket) {
     TCPServer server;
-    const Nexus::uint16 port = NextTestPort();
-    ASSERT_TRUE(server.Listen(port));
+    ASSERT_TRUE(server.Listen(0));
 
-    auto client = ConnectRawClient(port);
+    auto client = ConnectRawClient(server.GetBoundPort());
     ASSERT_TRUE(client.has_value());
     WaitUntil([&] {
         server.AcceptPending();
@@ -293,10 +281,9 @@ TEST_F(TCPServerTest, StopClearsClientsAndListenSocket) {
 
 TEST_F(TCPServerTest, ListenAgainResetsExistingClients) {
     TCPServer server;
-    const Nexus::uint16 firstPort = NextTestPort();
-    ASSERT_TRUE(server.Listen(firstPort));
+    ASSERT_TRUE(server.Listen(0));
 
-    auto client = ConnectRawClient(firstPort);
+    auto client = ConnectRawClient(server.GetBoundPort());
     ASSERT_TRUE(client.has_value());
     WaitUntil([&] {
         server.AcceptPending();
@@ -304,8 +291,7 @@ TEST_F(TCPServerTest, ListenAgainResetsExistingClients) {
     });
     ASSERT_EQ(server.ClientCount(), 1u);
 
-    const Nexus::uint16 secondPort = NextTestPort();
-    ASSERT_TRUE(server.Listen(secondPort));
+    ASSERT_TRUE(server.Listen(0));
 
     EXPECT_EQ(server.ClientCount(), 0u);
 }

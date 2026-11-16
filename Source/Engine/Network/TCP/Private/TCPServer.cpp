@@ -29,6 +29,12 @@ namespace Nexus::Network {
             return false;
         }
 
+        m_boundPort = m_listenSocket.GetBoundPort();
+        if (m_boundPort == 0) {
+            m_listenSocket.Close();
+            return false;
+        }
+
         m_nextClientId = 1;
         return true;
     }
@@ -89,6 +95,10 @@ namespace Nexus::Network {
         for (auto& [_, client] : m_clients) {
             static_cast<void>(client.Send(framedData));
         }
+    }
+
+    uint16 TCPServer::GetBoundPort() const {
+        return m_boundPort;
     }
 
     usize TCPServer::ClientCount() const noexcept {
