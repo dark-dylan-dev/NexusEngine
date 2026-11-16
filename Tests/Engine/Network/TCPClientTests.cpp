@@ -28,23 +28,18 @@ namespace {
         return predicate();
     }
 
-    Nexus::uint16 NextTestPort() {
-        static std::atomic<Nexus::uint16> counter{52000};
-        return counter.fetch_add(1);
-    }
-
     struct RawListener {
         Socket listener;
         Nexus::uint16 port = 0;
 
         static std::optional<RawListener> Create() {
             RawListener result;
-            result.port = NextTestPort();
             result.listener = Socket(SocketType::TCP);
-            if (!result.listener.IsValid() || !result.listener.SetNonBlocking(true) ||
-                !result.listener.Bind(result.port) || !result.listener.Listen()) {
+            if (!result.listener.IsValid() || !result.listener.SetNonBlocking(true) || !result.listener.Bind(0) ||
+                !result.listener.Listen()) {
                 return std::nullopt;
             }
+            result.port = result.listener.GetBoundPort();
             return result;
         }
 
@@ -54,7 +49,7 @@ namespace {
                 accepted = listener.Accept();
                 return accepted.has_value();
             });
-            const bool nonBlocking = accepted->SetNonBlocking(true);
+            const bool _ = accepted->SetNonBlocking(true);
             return accepted;
         }
     };
@@ -76,9 +71,8 @@ TEST_F(TCPClientTest, DefaultConstructedIsNotConnected) {
 
 TEST_F(TCPClientTest, ConnectToClosedPortFailsOrEndsUpDisconnected) {
     TCPClient client;
-    const Nexus::uint16 port = NextTestPort(); // nothing listening here
 
-    const bool started = client.Connect(NetworkAddress("127.0.0.1", port));
+    const bool started = client.Connect(NetworkAddress("127.0.0.1", 0)); // nothing listening here
     if (!started) {
         EXPECT_FALSE(client.IsConnected());
         return;

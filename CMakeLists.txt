@@ -5,7 +5,8 @@ cmake_minimum_required(VERSION 3.30 FATAL_ERROR)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_EXTENSIONS ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # C++20 modules
 include(Scripts/CMake/SetModuleUUID.cmake)
@@ -21,6 +22,9 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 project(NexusEngine VERSION 0.0.1 LANGUAGES CXX)
+
+option(NEXUS_RHI_VULKAN "Build Vulkan backend" ON)
+option(NEXUS_RHI_DX12 "Build DirectX12 backend" OFF)
 
 add_subdirectory(Source)
 

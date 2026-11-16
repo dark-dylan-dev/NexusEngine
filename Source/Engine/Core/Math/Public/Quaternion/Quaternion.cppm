@@ -42,6 +42,12 @@ export namespace Nexus {
         template <std::floating_point U>
         static constexpr Quaternion FromAxisAngle(const Vec3<U>& axis, U angleRadians);
 
+        template <std::floating_point U>
+        static constexpr Quaternion FromToRotation(const Vec3<U>& from, const Vec3<U>& to);
+
+        template <std::floating_point U>
+        static constexpr Quaternion LookRotation(const Vec3<U>& forward, const Vec3<U>& up);
+
         constexpr T& X();
         constexpr const T& X() const;
 
@@ -96,6 +102,8 @@ export namespace Nexus {
         constexpr T Pitch() const;
         constexpr T Yaw() const;
         constexpr T Roll() const;
+
+        constexpr void ToAxisAngle(Vec3<T>& outAxis, T& outAngleRadians) const;
     };
 
     template <std::floating_point T, std::floating_point U>
@@ -130,6 +138,18 @@ export namespace Nexus {
 
     template <std::floating_point T>
     constexpr Quaternion<T> Slerp(const Quaternion<T>& a, const Quaternion<T>& b, T t);
+
+    template <std::floating_point T>
+    constexpr Quaternion<T> LerpUnclamped(const Quaternion<T>& a, const Quaternion<T>& b, T t);
+
+    template <std::floating_point T>
+    constexpr Quaternion<T> SlerpUnclamped(const Quaternion<T>& a, const Quaternion<T>& b, T t);
+
+    template <std::floating_point T>
+    constexpr T Angle(const Quaternion<T>& a, const Quaternion<T>& b);
+
+    template <std::floating_point T>
+    constexpr Quaternion<T> RotateTowards(const Quaternion<T>& from, const Quaternion<T>& to, T maxAngleRadians);
 
     using Quaternionf = Quaternion<float32>;
     using Quaterniond = Quaternion<float64>;

@@ -12,4 +12,4 @@ add_subdirectory(Volk)
 add_subdirectory(Vulkan)
 add_subdirectory(VMA)
 
-target_link_libraries(NexusThirdParty INTERFACE cpptrace::cpptrace glfw glm imgui Jolt volk VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-HppModule)
+target_link_libraries(NexusThirdParty INTERFACE cpptrace::cpptrace glfw glm imgui Jolt volk VulkanMemoryAllocator-HppModule)

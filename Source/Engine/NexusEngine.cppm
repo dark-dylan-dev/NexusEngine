@@ -10,12 +10,15 @@ export import NE.Engine.Core.Config;
 export import NE.Engine.Core.ECS;
 export import NE.Engine.Core.Log;
 export import NE.Engine.Core.Types;
+export import NE.Engine.Core.Utils;
 export import NE.Engine.Core.Window;
 
 // Math
 export import NE.Engine.Math.Mat;
 export import NE.Engine.Math.Quaternion;
 export import NE.Engine.Math.Vec;
+export import NE.Engine.Math.Simd.Config;
+export import NE.Engine.Math.Simd.Traits;
 
 // Network
 export import NE.Engine.Network.Common.NetworkAddress;
@@ -28,3 +31,10 @@ export import NE.Engine.Network.TCP.StreamReassembler;
 export import NE.Engine.Network.TCP.TCPClient;
 export import NE.Engine.Network.TCP.TCPServer;
 export import NE.Engine.Network.UDP.UDPSocket;
+
+// RHI
+export import NE.Engine.RHI.Context;
+export import NE.Engine.RHI.Device;
+export import NE.Engine.RHI.Surface;
+export import NE.Engine.RHI.Texture;
+export import NE.Engine.RHI.TextureView;

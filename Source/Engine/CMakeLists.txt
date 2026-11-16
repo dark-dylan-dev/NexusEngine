@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 
 add_library(NexusEngine SHARED)
+set_target_properties(NexusEngine PROPERTIES OUTPUT_NAME Engine)
 set_target_properties(NexusEngine PROPERTIES PREFIX "")
 
 target_compile_definitions(NexusEngine PRIVATE NEXUS_ENGINE_BUILD)

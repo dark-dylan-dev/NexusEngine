@@ -414,6 +414,10 @@ VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE
           vkGetPhysicalDeviceQueueFamilyDataGraphOpticalFlowImageFormatsARM = PFN_vkGetPhysicalDeviceQueueFamilyDataGraphOpticalFlowImageFormatsARM(
             vkGetInstanceProcAddr( instance, "vkGetPhysicalDeviceQueueFamilyDataGraphOpticalFlowImageFormatsARM" ) );
 
+          //=== VK_EXT_cooperative_matrix_maintenance1 ===
+          vkGetPhysicalDeviceCooperativeMatrixProperties2EXT =
+            PFN_vkGetPhysicalDeviceCooperativeMatrixProperties2EXT( vkGetInstanceProcAddr( instance, "vkGetPhysicalDeviceCooperativeMatrixProperties2EXT" ) );
+
 #  if defined( VK_USE_PLATFORM_UBM_SEC )
           //=== VK_SEC_ubm_surface ===
           vkCreateUbmSurfaceSEC = PFN_vkCreateUbmSurfaceSEC( vkGetInstanceProcAddr( instance, "vkCreateUbmSurfaceSEC" ) );
@@ -732,6 +736,9 @@ VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE
 
         //=== VK_ARM_data_graph_optical_flow ===
         PFN_vkGetPhysicalDeviceQueueFamilyDataGraphOpticalFlowImageFormatsARM vkGetPhysicalDeviceQueueFamilyDataGraphOpticalFlowImageFormatsARM = 0;
+
+        //=== VK_EXT_cooperative_matrix_maintenance1 ===
+        PFN_vkGetPhysicalDeviceCooperativeMatrixProperties2EXT vkGetPhysicalDeviceCooperativeMatrixProperties2EXT = 0;
 
 #  if defined( VK_USE_PLATFORM_UBM_SEC )
         //=== VK_SEC_ubm_surface ===
@@ -3337,6 +3344,11 @@ VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE
       static VULKAN_HPP_CONST_OR_CONSTEXPR bool value = false;
     };
 
+#  if 20 <= VULKAN_HPP_CPP_VERSION
+    template <typename T>
+    concept VulkanRAIIHandleType = isVulkanRAIIHandleType<T>::value;
+#  endif
+
     class Context
     {
     public:
@@ -4411,6 +4423,13 @@ VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE
         getQueueFamilyDataGraphOpticalFlowImageFormatsARM( uint32_t                                       queueFamilyIndex,
                                                            QueueFamilyDataGraphPropertiesARM const &      queueFamilyDataGraphProperties,
                                                            DataGraphOpticalFlowImageFormatInfoARM const & opticalFlowImageFormatInfo ) const;
+
+      //=== VK_EXT_cooperative_matrix_maintenance1 ===
+
+      // wrapper function for command vkGetPhysicalDeviceCooperativeMatrixProperties2EXT, see
+      // https://registry.khronos.org/vulkan/specs/latest/man/html/vkGetPhysicalDeviceCooperativeMatrixProperties2EXT.html
+      VULKAN_HPP_NODISCARD typename ResultValueType<std::vector<CooperativeMatrixProperties2EXT>>::type
+        getCooperativeMatrixProperties2EXT( PhysicalDeviceCooperativeMatrixInfo2EXT const & cooperativeMatrixInfo ) const;
 
 #  if defined( VK_USE_PLATFORM_UBM_SEC )
       //=== VK_SEC_ubm_surface ===
@@ -15863,51 +15882,78 @@ VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE
     };
 
     // operators to compare VULKAN_HPP_NAMESPACE::raii-handles
-#  if defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
+#  if VULKAN_HPP_CPP_VERSION < 20
     template <typename T, typename std::enable_if<isVulkanRAIIHandleType<T>::value, bool>::type = 0>
+#  else
+    template <VulkanRAIIHandleType T>
+#  endif
+#  if defined( VULKAN_HPP_HAS_SPACESHIP_OPERATOR )
     auto operator<=>( T const & a, T const & b ) VULKAN_HPP_NOEXCEPT
     {
       return *a <=> *b;
     }
 #  else
-    template <typename T, typename std::enable_if<isVulkanRAIIHandleType<T>::value, bool>::type = 0>
     bool operator<( T const & a, T const & b ) VULKAN_HPP_NOEXCEPT
     {
       return *a < *b;
     }
 #  endif
 
+#  if VULKAN_HPP_CPP_VERSION < 20
     template <typename T, typename std::enable_if<isVulkanRAIIHandleType<T>::value, bool>::type = 0>
+#  else
+    template <VulkanRAIIHandleType T>
+#  endif
     bool operator==( T const & a, T const & b ) VULKAN_HPP_NOEXCEPT
     {
       return *a == *b;
     }
 
+#  if VULKAN_HPP_CPP_VERSION < 20
     template <typename T, typename std::enable_if<isVulkanRAIIHandleType<T>::value, bool>::type = 0>
+#  else
+    template <VulkanRAIIHandleType T>
+#  endif
     bool operator!=( T const & a, T const & b ) VULKAN_HPP_NOEXCEPT
     {
       return *a != *b;
     }
 
+#  if VULKAN_HPP_CPP_VERSION < 20
     template <typename T, typename std::enable_if<isVulkanRAIIHandleType<T>::value, bool>::type = 0>
+#  else
+    template <VulkanRAIIHandleType T>
+#  endif
     bool operator==( T const & v, std::nullptr_t ) VULKAN_HPP_NOEXCEPT
     {
       return !*v;
     }
 
+#  if VULKAN_HPP_CPP_VERSION < 20
     template <typename T, typename std::enable_if<isVulkanRAIIHandleType<T>::value, bool>::type = 0>
+#  else
+    template <VulkanRAIIHandleType T>
+#  endif
     bool operator==( std::nullptr_t, T const & v ) VULKAN_HPP_NOEXCEPT
     {
       return !*v;
     }
 
+#  if VULKAN_HPP_CPP_VERSION < 20
     template <typename T, typename std::enable_if<isVulkanRAIIHandleType<T>::value, bool>::type = 0>
+#  else
+    template <VulkanRAIIHandleType T>
+#  endif
     bool operator!=( T const & v, std::nullptr_t ) VULKAN_HPP_NOEXCEPT
     {
       return *v;
     }
 
+#  if VULKAN_HPP_CPP_VERSION < 20
     template <typename T, typename std::enable_if<isVulkanRAIIHandleType<T>::value, bool>::type = 0>
+#  else
+    template <VulkanRAIIHandleType T>
+#  endif
     bool operator!=( std::nullptr_t, T const & v ) VULKAN_HPP_NOEXCEPT
     {
       return *v;
@@ -30089,6 +30135,45 @@ VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE
 
       getDispatcher()->vkCmdSetComputeOccupancyPriorityNV( static_cast<VkCommandBuffer>( m_commandBuffer ),
                                                            reinterpret_cast<VkComputeOccupancyPriorityParametersNV const *>( &parameters ) );
+    }
+
+    //=== VK_EXT_cooperative_matrix_maintenance1 ===
+
+    // wrapper function for command vkGetPhysicalDeviceCooperativeMatrixProperties2EXT, see
+    // https://registry.khronos.org/vulkan/specs/latest/man/html/vkGetPhysicalDeviceCooperativeMatrixProperties2EXT.html
+    VULKAN_HPP_NODISCARD VULKAN_HPP_INLINE typename ResultValueType<std::vector<CooperativeMatrixProperties2EXT>>::type
+                         PhysicalDevice::getCooperativeMatrixProperties2EXT( PhysicalDeviceCooperativeMatrixInfo2EXT const & cooperativeMatrixInfo ) const
+    {
+      VULKAN_HPP_ASSERT( getDispatcher()->vkGetPhysicalDeviceCooperativeMatrixProperties2EXT &&
+                         "Function <vkGetPhysicalDeviceCooperativeMatrixProperties2EXT> requires <VK_EXT_cooperative_matrix_maintenance1>" );
+
+      std::vector<CooperativeMatrixProperties2EXT> properties;
+      uint32_t                                     propertyCount;
+      Result                                       result;
+      do
+      {
+        result = static_cast<Result>( getDispatcher()->vkGetPhysicalDeviceCooperativeMatrixProperties2EXT(
+          static_cast<VkPhysicalDevice>( m_physicalDevice ),
+          reinterpret_cast<VkPhysicalDeviceCooperativeMatrixInfo2EXT const *>( &cooperativeMatrixInfo ),
+          &propertyCount,
+          nullptr ) );
+        if ( ( result == Result::eSuccess ) && propertyCount )
+        {
+          properties.resize( propertyCount );
+          result = static_cast<Result>( getDispatcher()->vkGetPhysicalDeviceCooperativeMatrixProperties2EXT(
+            static_cast<VkPhysicalDevice>( m_physicalDevice ),
+            reinterpret_cast<VkPhysicalDeviceCooperativeMatrixInfo2EXT const *>( &cooperativeMatrixInfo ),
+            &propertyCount,
+            reinterpret_cast<VkCooperativeMatrixProperties2EXT *>( properties.data() ) ) );
+        }
+      } while ( result == Result::eIncomplete );
+      VULKAN_HPP_NAMESPACE::detail::resultCheck( result, VULKAN_HPP_RAII_NAMESPACE_STRING "::PhysicalDevice::getCooperativeMatrixProperties2EXT" );
+      VULKAN_HPP_ASSERT( propertyCount <= properties.size() );
+      if ( propertyCount < properties.size() )
+      {
+        properties.resize( propertyCount );
+      }
+      return VULKAN_HPP_NAMESPACE::detail::createResultValueType( result, std::move( properties ) );
     }
 
 #  if defined( VK_USE_PLATFORM_UBM_SEC )

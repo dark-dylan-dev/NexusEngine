@@ -19,11 +19,17 @@ export namespace Nexus {
         Window& operator=(const Window&) = delete;
 
         bool ShouldClose() const;
-        void DrawFrame();
-        void PollEvents() const;
+        void PollEvents();
+
+        void SetTitle(const std::string_view& title) const;
 
         int GetWidth() const;
         int GetHeight() const;
+
+        int GetPixelWidth() const;
+        int GetPixelHeight() const;
+
+        void* GetHandle() const;
 
     private:
         void CreateWindow(const std::string_view& title);
@@ -34,5 +40,7 @@ export namespace Nexus {
         GLFWwindow* m_window{nullptr};
         int m_width{};
         int m_height{};
+        int m_pixelWidth{};
+        int m_pixelHeight{};
     };
 } // namespace Nexus

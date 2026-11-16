@@ -42,6 +42,7 @@ export namespace Nexus::Network {
 
         bool SetNonBlocking(bool enabled);
         bool Bind(uint16 port);
+        uint16 GetBoundPort() const;
 
         bool Connect(const NetworkAddress& address, std::optional<NetworkError>& outError);
         [[nodiscard]] bool CompleteConnect(std::optional<NetworkError>& outError);
@@ -63,6 +64,7 @@ export namespace Nexus::Network {
     private:
         NativeSocketHandle m_handle = INVALID_SOCKET;
         SocketType m_type = SocketType::TCP;
+        uint16 m_port = 0;
     };
 
 } // namespace Nexus::Network

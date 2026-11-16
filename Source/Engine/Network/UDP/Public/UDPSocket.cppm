@@ -32,6 +32,7 @@ export namespace Nexus::Network {
         UDPSocket& operator=(UDPSocket&&) noexcept = default;
 
         bool Bind(uint16 port);
+        uint16 GetBoundPort() const;
 
         void Close();
 

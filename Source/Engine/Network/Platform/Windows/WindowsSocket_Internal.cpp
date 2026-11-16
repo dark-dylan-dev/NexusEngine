@@ -144,6 +144,15 @@ namespace Nexus::Network::Internal {
         return ::bind(static_cast<SOCKET>(handle), reinterpret_cast<const sockaddr*>(&sa), sizeof(sa)) == 0;
     }
 
+    unsigned short RawGetPort(RawHandle handle) {
+        sockaddr_in sa{};
+        int len = sizeof(sa);
+        if (::getsockname(static_cast<SOCKET>(handle), reinterpret_cast<sockaddr*>(&sa), &len) != 0) {
+            return 0;
+        }
+        return ntohs(sa.sin_port);
+    }
+
     bool RawListen(RawHandle handle, int backlog) {
         return ::listen(static_cast<SOCKET>(handle), backlog) == 0;
     }

@@ -16,10 +16,9 @@
 #ifndef VULKAN_MEMORY_ALLOCATOR_HPP
 #define VULKAN_MEMORY_ALLOCATOR_HPP
 
-#ifdef VMA_HPP_CXX_MODULE
-import vulkan;
-#else
-#include <vulkan/vulkan.hpp>
+// volk
+#ifdef VMA_HPP_ENABLE_VOLK
+#include <volk.h>
 #endif
 
 #define VMA_HPP_NAMESPACE_STRING VULKAN_HPP_STRINGIFY(VMA_HPP_NAMESPACE)
@@ -29,7 +28,7 @@ import vulkan;
 // https://github.com/KhronosGroup/Vulkan-Hpp/commit/a0a4c22975c89f70202542cc52d0f182db296002
 // Just add dummy operators, so that using declarations would always compile.
 namespace VMA_HPP_NAMESPACE { class Dummy; }
-namespace VULKAN_HPP_NAMESPACE {
+VULKAN_HPP_EXPORT namespace VULKAN_HPP_NAMESPACE {
   void operator<(VMA_HPP_NAMESPACE::Dummy, VMA_HPP_NAMESPACE::Dummy);
   void operator<=(VMA_HPP_NAMESPACE::Dummy, VMA_HPP_NAMESPACE::Dummy);
   void operator>(VMA_HPP_NAMESPACE::Dummy, VMA_HPP_NAMESPACE::Dummy);
@@ -39,7 +38,7 @@ namespace VULKAN_HPP_NAMESPACE {
 #endif
 }
 
-namespace VMA_HPP_NAMESPACE {
+VULKAN_HPP_EXPORT namespace VMA_HPP_NAMESPACE {
   using VULKAN_HPP_NAMESPACE::operator&;
   using VULKAN_HPP_NAMESPACE::operator|;
   using VULKAN_HPP_NAMESPACE::operator^;
