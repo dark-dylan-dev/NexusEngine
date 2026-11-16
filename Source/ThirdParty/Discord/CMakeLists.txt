@@ -24,6 +24,7 @@ elseif(APPLE)
 else() # Linux
     set_target_properties(DiscordPartnerSDK PROPERTIES
             IMPORTED_LOCATION "${DISCORD_SDK_LIB_DIR}/libdiscord_partner_sdk.so"
+            IMPORTED_NO_SONAME TRUE
     )
 endif()
 
